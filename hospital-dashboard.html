@@ -579,6 +579,10 @@ function selPlan(p){
   selPlanName=p;
   document.getElementById("pc-basic").classList.toggle("sel",p==="basic");
   document.getElementById("pc-pro").classList.toggle("sel",p==="pro");
+  // Show Razorpay key field whenever Pro is selected
+  document.getElementById("rzpSetupCard").style.display=p==="pro"?"block":"none";
+  if(p==="pro"&&session.razorpayKeyId)
+    document.getElementById("rzpKeyInput").value=session.razorpayKeyId;
   updateSubSummary();
 }
 function updateSubSummary(){
