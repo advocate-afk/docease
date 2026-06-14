@@ -7,18 +7,18 @@
 const DC = {
   // ── 1. Apps Script Web App URL (deploy karne ke baad milega) ──
   //    Looks like: https://script.google.com/macros/s/AKfyc.../exec
-  BACKEND: "PASTE_APPS_SCRIPT_URL_HERE",
+  BACKEND: "https://script.google.com/macros/s/AKfycbyUsjz3hMDn7_AoGGQC00BvLPQ5oDf7NtKOGdUemK7s1hoICWk2JZaOWP2R9qY875E_/exec",
 
   // ── 2. Aapka Razorpay Key ID (subscription billing ke liye) ──
   //    Razorpay Dashboard → Settings → API Keys → Key ID
   //    Test:  rzp_test_xxxxxxxxxxxx
   //    Live:  rzp_live_xxxxxxxxxxxx
-  RZP_KEY: "PASTE_YOUR_RAZORPAY_KEY_ID_HERE",
+  RZP_KEY: "rzp_live_T1PUGj0qC2zy62",
 
   // ── 3. GitHub Pages URL (GitHub deploy ke baad) ──
   //    Example: https://prakash123.github.io/docease/
-  BASE_URL: "PASTE_GITHUB_PAGES_URL_HERE",
+  BASE_URL: "https://advocate-afk.github.io/docease/",
 
   // ── 4. Admin passcode (same as Code.gs mein) ──
-  ADMIN_PASS: "DOCEASE_ADMIN_2024",
+  ADMIN_PASS: "6835",
 };
