@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Hospital Login — DocEase</title>
+<script src="config.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--t:#0d9488;--td:#0f766e;--tl:#ccfbf1}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:linear-gradient(135deg,#134e4a,#0d9488 50%,#0891b2);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{background:#fff;border-radius:20px;padding:38px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.logo{text-align:center;margin-bottom:26px}
+.logo .br{font-size:26px;font-weight:800;color:#134e4a}.logo .br span{color:var(--t)}
+.logo .sb{font-size:12px;color:#64748b;margin-top:4px}
+h2{font-size:19px;font-weight:700;margin-bottom:5px;color:#0f172a}
+.st{font-size:13px;color:#64748b;margin-bottom:22px}
+.fg{margin-bottom:14px}
+.fg label{display:block;font-size:12px;font-weight:600;color:#334155;margin-bottom:5px}
+.fg input{width:100%;padding:11px 13px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:inherit;transition:.2s}
+.fg input:focus{outline:none;border-color:var(--t);box-shadow:0 0 0 3px var(--tl)}
+.btn{width:100%;padding:12px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;border:none;background:var(--t);color:#fff;font-family:inherit;transition:.2s}
+.btn:hover{background:var(--td)}.btn:disabled{background:#cbd5e1;cursor:not-allowed}
+.otp-wrap{display:flex;gap:9px;justify-content:center;margin-bottom:18px}
+.oi{width:50px;height:58px;border:2px solid #e2e8f0;border-radius:12px;font-size:22px;font-weight:700;text-align:center;font-family:inherit;transition:.2s}
+.oi:focus{outline:none;border-color:var(--t);box-shadow:0 0 0 3px var(--tl)}
+.bkl{text-align:center;font-size:12px;color:#64748b;margin-top:14px;cursor:pointer}
+.bkl span{color:var(--t);font-weight:600}
+.rsnd{text-align:center;font-size:12px;color:#64748b;margin-bottom:14px}
+.rsnd button{background:none;border:none;color:var(--t);font-weight:600;cursor:pointer;font-size:12px;font-family:inherit}
+.al{padding:10px 13px;border-radius:8px;font-size:13px;margin-bottom:10px;display:none}
+.err{background:#fee2e2;color:#991b1b;border:1px solid #fecaca}
+.ok{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0}
+.step{display:none}.step.on{display:block}
+.tmr{font-weight:700;color:var(--t)}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo"><div class="br">Doc<span>Ease</span></div><div class="sb">Hospital Management Portal</div></div>
+
+  <div class="step on" id="s1">
+    <h2>Welcome Back</h2>
+    <div class="st">Enter your registered hospital email</div>
+    <div class="al err" id="e1"></div>
+    <div class="fg"><label>Hospital Email</label><input type="email" id="email" placeholder="hospital@example.com" onkeypress="if(event.key==='Enter')sendOTP()"></div>
+    <button class="btn" id="sendBtn" onclick="sendOTP()">Send OTP →</button>
+    <div style="text-align:center;margin-top:18px;font-size:12px;color:#64748b">New hospital? <a href="index.html#register" style="color:var(--t);font-weight:600">Register here</a></div>
+  </div>
+
+  <div class="step" id="s2">
+    <h2>Enter OTP</h2>
+    <div class="st" id="otpSt">6-digit code sent to your email</div>
+    <div class="al err" id="e2"></div>
+    <div class="al ok" id="ok2"></div>
+    <div class="otp-wrap">
+      <input class="oi" id="o1" maxlength="1" oninput="nxt(this,'o2')" onkeydown="bk(event,this,null)">
+      <input class="oi" id="o2" maxlength="1" oninput="nxt(this,'o3')" onkeydown="bk(event,this,'o1')">
+      <input class="oi" id="o3" maxlength="1" oninput="nxt(this,'o4')" onkeydown="bk(event,this,'o2')">
+      <input class="oi" id="o4" maxlength="1" oninput="nxt(this,'o5')" onkeydown="bk(event,this,'o3')">
+      <input class="oi" id="o5" maxlength="1" oninput="nxt(this,'o6')" onkeydown="bk(event,this,'o4')">
+      <input class="oi" id="o6" maxlength="1" oninput="auto()" onkeydown="bk(event,this,'o5')">
+    </div>
+    <div class="rsnd"><span id="rsMsg">Resend in <span class="tmr" id="tmr">60</span>s</span><button id="rsBtn" onclick="resend()" style="display:none">Resend OTP</button></div>
+    <button class="btn" id="vrfBtn" onclick="verify()">Verify & Login →</button>
+    <div class="bkl" onclick="back()">← <span>Change email</span></div>
+  </div>
+</div>
+
+<script>
+const B=DC.BACKEND;let email="",timer;
+function sw(n){document.querySelectorAll(".step").forEach(s=>s.classList.remove("on"));document.getElementById("s"+n).classList.add("on");}
+function err(s,m){const e=document.getElementById("e"+s);e.textContent=m;e.style.display="block";setTimeout(()=>e.style.display="none",5000);}
+
+async function sendOTP(){
+  email=document.getElementById("email").value.trim();
+  if(!email.includes("@")){err(1,"Enter a valid email");return;}
+  const btn=document.getElementById("sendBtn");btn.disabled=true;btn.textContent="Sending...";
+  try{
+    const r=await post({action:"sendOTP",email});
+    btn.disabled=false;btn.textContent="Send OTP →";
+    if(!r.ok){err(1,r.error||"Failed to send OTP");return;}
+    document.getElementById("otpSt").textContent="Code sent to "+email;
+    sw(2);startTimer();document.getElementById("o1").focus();
+  }catch(e){btn.disabled=false;btn.textContent="Send OTP →";err(1,"Network error. Try again.");}
+}
+
+async function resend(){document.getElementById("rsBtn").style.display="none";await sendOTP();startTimer();}
+
+function startTimer(){
+  let t=60;clearInterval(timer);
+  document.getElementById("rsMsg").style.display="inline";document.getElementById("rsBtn").style.display="none";
+  timer=setInterval(()=>{document.getElementById("tmr").textContent=--t;if(t<=0){clearInterval(timer);document.getElementById("rsMsg").style.display="none";document.getElementById("rsBtn").style.display="inline";}},1000);
+}
+
+function nxt(el,nid){if(el.value&&nid)document.getElementById(nid).focus();}
+function bk(e,el,pid){if(e.key==="Backspace"&&!el.value&&pid)document.getElementById(pid).focus();}
+function auto(){if(getotp().length===6)verify();}
+function getotp(){return ["o1","o2","o3","o4","o5","o6"].map(id=>document.getElementById(id).value).join("");}
+
+async function verify(){
+  const otp=getotp();if(otp.length!==6){err(2,"Enter all 6 digits");return;}
+  const btn=document.getElementById("vrfBtn");btn.disabled=true;btn.textContent="Verifying...";
+  try{
+    const r=await post({action:"verifyOTP",email,otp});
+    btn.disabled=false;btn.textContent="Verify & Login →";
+    if(!r.ok){err(2,r.error||"Invalid OTP");return;}
+    localStorage.setItem("dce_session",JSON.stringify(r.hospital));
+    const ok=document.getElementById("ok2");ok.textContent="✅ Login successful! Redirecting...";ok.style.display="block";
+    setTimeout(()=>location.href="hospital-dashboard.html",1000);
+  }catch(e){btn.disabled=false;btn.textContent="Verify & Login →";err(2,"Network error.");}
+}
+
+function back(){clearInterval(timer);["o1","o2","o3","o4","o5","o6"].forEach(id=>document.getElementById(id).value="");sw(1);}
+
+async function post(body){const r=await fetch(B,{method:"POST",body:JSON.stringify(body)});return r.json();}
+
+if(localStorage.getItem("dce_session"))location.href="hospital-dashboard.html";
+</script>
+</body>
+</html>

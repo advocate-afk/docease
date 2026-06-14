@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Admin — DocEase</title>
+<script src="config.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--t:#0d9488;--g50:#f8fafc;--g100:#f1f5f9;--g200:#e2e8f0;--g300:#cbd5e1;--g500:#64748b;--g700:#334155;--g900:#0f172a;--w:#fff}
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;background:var(--g50);color:var(--g900)}
+.login{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0f172a,#1e293b)}
+.lc{background:var(--w);border-radius:16px;padding:36px;width:340px;box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center}
+.lc .logo{font-size:22px;font-weight:800;color:#0f172a;margin-bottom:4px}.lc .logo span{color:var(--t)}
+.lc .sub{font-size:12px;color:var(--g500);margin-bottom:24px}
+.inp{width:100%;padding:11px 13px;border:1.5px solid var(--g200);border-radius:10px;font-size:14px;font-family:inherit;margin-bottom:12px;text-align:center;letter-spacing:4px}
+.inp:focus{outline:none;border-color:var(--t)}
+.lbtn{width:100%;padding:12px;border:none;background:var(--t);color:#fff;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+.lerr{color:#ef4444;font-size:12px;margin-top:8px;display:none}
+/* dashboard */
+.dash{display:none}
+.topnav{background:#0f172a;padding:14px 24px;display:flex;align-items:center;gap:16px}
+.topnav .brand{font-size:18px;font-weight:800;color:#fff}.topnav .brand span{color:#5eead4}
+.topnav .badge{background:#ef4444;color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700}
+.tabs{background:var(--w);border-bottom:2px solid var(--g100);padding:0 24px;display:flex;gap:4px;overflow-x:auto}
+.tab{padding:13px 18px;font-size:13px;font-weight:600;cursor:pointer;color:var(--g500);border-bottom:2px solid transparent;margin-bottom:-2px;transition:.2s;white-space:nowrap}
+.tab.on{color:var(--t);border-bottom-color:var(--t)}
+.content{padding:24px;max-width:1200px;margin:0 auto}
+/* metrics */
+.metrics{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:24px}
+.mc{background:var(--w);border-radius:10px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.06);text-align:center}
+.mc .v{font-size:26px;font-weight:800;color:var(--g900);margin-bottom:2px}.mc .l{font-size:11px;color:var(--g500)}
+/* section */
+.sec{background:var(--w);border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:16px}
+.sec-h{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--g100)}
+.sec-h h2{font-size:14px;font-weight:700}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px 16px;text-align:left;font-size:12px;border-bottom:1px solid var(--g100)}
+th{font-weight:600;color:var(--g500);background:var(--g50)}
+tr:last-child td{border:none}
+.badge2{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+.bg{background:#dcfce7;color:#166534}.bb{background:#dbeafe;color:#1e40af}.by{background:#fef9c3;color:#854d0e}.br{background:#fee2e2;color:#991b1b}.bgr{background:var(--g100);color:var(--g700)}.bpu{background:#ede9fe;color:#5b21b6}
+.abtn{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:none;font-family:inherit;margin:2px}
+.at{background:var(--tl,#ccfbf1);color:#0f766e}.ag{background:#dcfce7;color:#166534}.ar{background:#fee2e2;color:#991b1b}
+.btn{padding:9px 18px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:inherit}
+.btn-p{background:var(--t);color:#fff}.btn-p:hover{background:#0f766e}
+/* modal */
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:center;justify-content:center}
+.mo.show{display:flex}
+.mbox{background:#fff;border-radius:14px;padding:24px;width:90%;max-width:420px}
+.mbox h2{font-size:16px;font-weight:700;margin-bottom:16px}
+.mc2{float:right;background:none;border:none;font-size:18px;cursor:pointer;color:var(--g500)}
+.fg{margin-bottom:12px}
+.fg label{display:block;font-size:12px;font-weight:600;color:var(--g700);margin-bottom:4px}
+.fg input,.fg select{width:100%;padding:9px 12px;border:1px solid var(--g300);border-radius:8px;font-size:13px;font-family:inherit}
+.fg input:focus,.fg select:focus{outline:none;border-color:var(--t)}
+.kdisp{font-size:20px;font-weight:800;letter-spacing:2px;color:var(--t);text-align:center;padding:16px;background:var(--g50);border-radius:8px;margin:12px 0}
+@media(max-width:800px){.metrics{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login" id="loginScreen">
+  <div class="lc">
+    <div class="logo">Doc<span>Ease</span></div>
+    <div class="sub">Super Admin Panel</div>
+    <input class="inp" type="password" id="pass" placeholder="Admin Passcode" onkeypress="if(event.key==='Enter')login()">
+    <button class="lbtn" onclick="login()">Access Admin Panel</button>
+    <div class="lerr" id="lerr">Wrong passcode</div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="dash" id="adminDash">
+  <div class="topnav">
+    <div class="brand">Doc<span>Ease</span> <span style="color:var(--g500);font-size:12px;font-weight:400">Admin</span></div>
+    <span class="badge" id="pendingBadge" style="display:none">0 Pending</span>
+    <span style="margin-left:auto;color:var(--g500);font-size:12px" id="navDate"></span>
+  </div>
+  <div class="tabs">
+    <div class="tab on" onclick="tab('overview',this)">📊 Overview</div>
+    <div class="tab" onclick="tab('hospitals',this)">🏥 All Hospitals</div>
+    <div class="tab" onclick="tab('pending',this)">⏳ Pending Approval <span id="pendTab"></span></div>
+    <div class="tab" onclick="tab('revenue',this)">💰 Revenue</div>
+    <div class="tab" onclick="tab('keys',this)">🔑 License Keys</div>
+  </div>
+  <div class="content">
+
+    <!-- OVERVIEW -->
+    <div id="t-overview">
+      <div class="metrics">
+        <div class="mc"><div class="v" id="st-total">0</div><div class="l">Total Hospitals</div></div>
+        <div class="mc"><div class="v" id="st-active">0</div><div class="l">Active</div></div>
+        <div class="mc"><div class="v" id="st-pending">0</div><div class="l">Pending</div></div>
+        <div class="mc"><div class="v" id="st-pro">0</div><div class="l">Pro Plan</div></div>
+        <div class="mc"><div class="v" id="st-docs">0</div><div class="l">Total Doctors</div></div>
+        <div class="mc"><div class="v" id="st-mrr">₹0</div><div class="l">This Month</div></div>
+      </div>
+    </div>
+
+    <!-- ALL HOSPITALS -->
+    <div id="t-hospitals" style="display:none">
+      <div class="sec">
+        <div class="sec-h"><h2>All Hospitals</h2><button class="btn btn-p" onclick="openMo('mAddH')">+ Add Hospital</button></div>
+        <table><thead><tr><th>Hospital</th><th>Email</th><th>Phone</th><th>Plan</th><th>Status</th><th>Subscription</th><th>Doctors</th><th>Actions</th></tr></thead>
+        <tbody id="hospTbl"></tbody></table>
+      </div>
+    </div>
+
+    <!-- PENDING -->
+    <div id="t-pending" style="display:none">
+      <div id="pendList"></div>
+    </div>
+
+    <!-- REVENUE -->
+    <div id="t-revenue" style="display:none">
+      <div class="metrics" style="grid-template-columns:repeat(3,1fr)">
+        <div class="mc"><div class="v" id="rev-total">₹0</div><div class="l">Total Revenue</div></div>
+        <div class="mc"><div class="v" id="rev-mrr">₹0</div><div class="l">This Month</div></div>
+        <div class="mc"><div class="v" id="rev-arr">₹0</div><div class="l">Annual Run Rate</div></div>
+      </div>
+      <div class="sec">
+        <div class="sec-h"><h2>Revenue by Hospital</h2></div>
+        <table><thead><tr><th>Hospital</th><th>Plan</th><th>Doctors</th><th>Monthly Value</th><th>Status</th></tr></thead>
+        <tbody id="revTbl"></tbody></table>
+      </div>
+    </div>
+
+    <!-- KEYS -->
+    <div id="t-keys" style="display:none">
+      <div class="sec">
+        <div class="sec-h"><h2>License Keys</h2><button class="btn btn-p" onclick="openMo('mGenKey')">+ Generate Key</button></div>
+        <table><thead><tr><th>Key</th><th>Type</th><th>Months</th><th>Hospital</th><th>Used At</th><th>Created</th></tr></thead>
+        <tbody id="keyTbl"></tbody></table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="mo" id="mAddH">
+  <div class="mbox">
+    <button class="mc2" onclick="closeMo('mAddH')">×</button>
+    <h2>Add Hospital Manually</h2>
+    <div class="fg"><label>Name *</label><input id="ahName"></div>
+    <div class="fg"><label>Email *</label><input id="ahEmail" type="email"></div>
+    <div class="fg"><label>Phone</label><input id="ahPhone"></div>
+    <div class="fg"><label>Address</label><input id="ahAddr"></div>
+    <div class="fg"><label>State</label><input id="ahState"></div>
+    <button class="btn btn-p" style="width:100%" onclick="addHospital()">Add & Approve</button>
+  </div>
+</div>
+
+<div class="mo" id="mGenKey">
+  <div class="mbox">
+    <button class="mc2" onclick="closeMo('mGenKey')">×</button>
+    <h2>Generate License Key</h2>
+    <div class="fg"><label>Plan Type</label><select id="kType"><option value="basic">Basic Plan</option><option value="pro">Pro Plan</option></select></div>
+    <div class="fg"><label>Duration (months)</label><select id="kMonths"><option value="1">1 Month</option><option value="3">3 Months</option><option value="6">6 Months</option><option value="12">12 Months (1 Year)</option></select></div>
+    <button class="btn btn-p" style="width:100%;margin-bottom:12px" onclick="genKey()">Generate Key</button>
+    <div id="keyResult" style="display:none">
+      <div class="kdisp" id="keyDisplay"></div>
+      <button class="btn" style="width:100%;border:1px solid var(--g300)" onclick="copyKey()">📋 Copy Key</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const B=DC.BACKEND,PASS=DC.ADMIN_PASS;
+let allHospitals=[], stats={};
+
+function login(){
+  const p=document.getElementById("pass").value;
+  if(p!==PASS){document.getElementById("lerr").style.display="block";return;}
+  document.getElementById("loginScreen").style.display="none";
+  document.getElementById("adminDash").style.display="block";
+  document.getElementById("navDate").textContent=new Date().toLocaleDateString("en-IN",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+  loadStats();
+}
+
+async function loadStats(){
+  try{
+    const r=await post({action:"getAdminStats",passcode:PASS});
+    if(!r.ok)return;
+    stats=r;
+    allHospitals=r.hospitals||[];
+
+    // Overview
+    document.getElementById("st-total").textContent=r.totalHospitals||0;
+    document.getElementById("st-active").textContent=r.activeHospitals||0;
+    document.getElementById("st-pending").textContent=r.pendingHospitals||0;
+    document.getElementById("st-pro").textContent=r.proHospitals||0;
+    document.getElementById("st-docs").textContent=r.totalDoctors||0;
+    document.getElementById("st-mrr").textContent="₹"+(r.mrr||0);
+
+    // Pending badge
+    const pend=r.pendingHospitals||0;
+    document.getElementById("pendingBadge").style.display=pend>0?"inline":"none";
+    document.getElementById("pendingBadge").textContent=pend+" Pending";
+    document.getElementById("pendTab").innerHTML=pend>0?` <span style="background:#ef4444;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px">${pend}</span>`:"";
+
+    // Revenue
+    document.getElementById("rev-total").textContent="₹"+(r.totalRevenue||0);
+    document.getElementById("rev-mrr").textContent="₹"+(r.mrr||0);
+    document.getElementById("rev-arr").textContent="₹"+((r.mrr||0)*12);
+
+    renderHospTable();
+    renderPending();
+    renderRevTable();
+  }catch(e){console.error(e);}
+}
+
+function renderHospTable(){
+  document.getElementById("hospTbl").innerHTML=allHospitals.map(h=>`
+    <tr>
+      <td><div style="font-weight:600">${h.name}</div><div style="font-size:11px;color:var(--g500)">${h.address||""}</div></td>
+      <td>${h.email}</td><td>${h.phone||"—"}</td>
+      <td><span class="badge2 ${h.plan==="pro"?"bpu":"bgr"}">${h.plan?.toUpperCase()||"BASIC"}</span></td>
+      <td><span class="badge2 ${h.status==="active"?"bg":h.status==="pending"?"by":"br"}">${h.status}</span></td>
+      <td style="font-size:11px">${h.subExpiry?h.subExpiry.split("T")[0]:h.trialEnd?("Trial till "+h.trialEnd.split("T")[0]):"—"}</td>
+      <td>${h.doctorCount||0}</td>
+      <td>
+        ${h.status==="pending"?`<button class="abtn ag" onclick="approve('${h.hospitalId}')">✅ Approve</button>`:""}
+        ${h.status==="active"?`<button class="abtn ar" onclick="suspend('${h.hospitalId}')">⏸ Suspend</button>`:""}
+        ${h.status==="suspended"?`<button class="abtn at" onclick="approveH('${h.hospitalId}','active')">▶ Activate</button>`:""}
+      </td>
+    </tr>`).join("");
+}
+
+function renderPending(){
+  const pending=allHospitals.filter(h=>h.status==="pending");
+  document.getElementById("pendList").innerHTML=pending.length===0
+    ?`<div style="text-align:center;padding:40px;color:var(--g500)">🎉 No pending approvals</div>`
+    :pending.map(h=>`
+      <div style="background:var(--w);border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);padding:18px;margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
+          <div>
+            <div style="font-weight:700;font-size:15px">${h.name}</div>
+            <div style="font-size:12px;color:var(--g500);margin-top:3px">📧 ${h.email} · 📱 ${h.phone}</div>
+            <div style="font-size:12px;color:var(--g500);margin-top:2px">📍 ${h.address}</div>
+            <div style="font-size:12px;color:var(--g500);margin-top:2px">🏷️ ${h.specializations||"Not specified"}</div>
+            <div style="font-size:11px;color:var(--g500);margin-top:4px">Registered: ${h.createdAt?.split("T")[0]||"—"}</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-p" onclick="approve('${h.hospitalId}')">✅ Approve & Activate Trial</button>
+            <button class="btn" style="border:1px solid #fecaca;color:#991b1b" onclick="suspend('${h.hospitalId}')">❌ Reject</button>
+          </div>
+        </div>
+      </div>`).join("");
+}
+
+function renderRevTable(){
+  const baseUrl=DC.BASE_URL;
+  document.getElementById("revTbl").innerHTML=allHospitals.filter(h=>h.status==="active").map(h=>{
+    const price=h.plan==="pro"?999:499;
+    const monthly=price*(h.doctorCount||1);
+    return `<tr>
+      <td><div style="font-weight:600">${h.name}</div></td>
+      <td><span class="badge2 ${h.plan==="pro"?"bpu":"bgr"}">${h.plan?.toUpperCase()||"BASIC"}</span></td>
+      <td>${h.doctorCount||0}</td>
+      <td style="font-weight:700;color:var(--t)">₹${monthly}</td>
+      <td><span class="badge2 ${h.subExpiry&&new Date(h.subExpiry)>new Date()?"bg":"by"}">${h.subExpiry&&new Date(h.subExpiry)>new Date()?"Active — till "+h.subExpiry.split("T")[0]:"Trial/Expired"}</span></td>
+    </tr>`;
+  }).join("")||`<tr><td colspan="5" style="text-align:center;color:var(--g500);padding:20px">No active hospitals</td></tr>`;
+}
+
+async function approve(id){
+  const r=await post({action:"approveHospital",hospitalId:id,passcode:PASS,baseUrl:DC.BASE_URL});
+  if(r.ok){alert("Hospital approved!");loadStats();}else alert("Error: "+r.error);
+}
+async function suspend(id){
+  if(!confirm("Suspend this hospital?"))return;
+  const r=await post({action:"suspendHospital",hospitalId:id,passcode:PASS,status:"suspended"});
+  if(r.ok)loadStats();
+}
+
+async function addHospital(){
+  const name=document.getElementById("ahName").value.trim();
+  const email=document.getElementById("ahEmail").value.trim();
+  if(!name||!email){alert("Name and email required");return;}
+  const r=await post({action:"registerHospital",name,email,
+    phone:document.getElementById("ahPhone").value,
+    address:document.getElementById("ahAddr").value,
+    state:document.getElementById("ahState").value});
+  if(r.ok){
+    // Auto-approve
+    const allR=await post({action:"getAllHospitals",passcode:PASS});
+    const h=allR.hospitals?.find(x=>x.email===email);
+    if(h)await post({action:"approveHospital",hospitalId:h.hospitalId,passcode:PASS,baseUrl:DC.BASE_URL});
+    closeMo("mAddH");loadStats();alert("Hospital added and approved!");
+  }else alert("Error: "+r.error);
+}
+
+async function genKey(){
+  const r=await post({action:"generateKey",passcode:PASS,
+    type:document.getElementById("kType").value,
+    months:Number(document.getElementById("kMonths").value)});
+  if(r.ok){
+    document.getElementById("keyResult").style.display="block";
+    document.getElementById("keyDisplay").textContent=r.key;
+  }
+}
+
+async function loadKeys(){
+  // Get from stats — keys are shown from admin stats
+  // Reload stats and show keys
+  await loadStats();
+  // For now show message
+  document.getElementById("keyTbl").innerHTML=`<tr><td colspan="6" style="text-align:center;color:var(--g500);padding:16px">Generate keys using the button above. Keys appear after page reload.</td></tr>`;
+}
+
+function copyKey(){
+  const k=document.getElementById("keyDisplay").textContent;
+  navigator.clipboard.writeText(k).then(()=>alert("Key copied: "+k));
+}
+
+function tab(name,el){
+  document.querySelectorAll("[id^='t-']").forEach(t=>t.style.display="none");
+  document.getElementById("t-"+name).style.display="block";
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("on"));
+  el.classList.add("on");
+  if(name==="keys")loadKeys();
+}
+
+function openMo(id){document.getElementById(id).classList.add("show");}
+function closeMo(id){document.getElementById(id).classList.remove("show");}
+async function post(body){const r=await fetch(B,{method:"POST",body:JSON.stringify(body)});return r.json();}
+</script>
+</body>
+</html>

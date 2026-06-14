@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Book Appointment — DocEase</title>
+<script src="config.js"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--t:#0d9488;--td:#0f766e;--tl:#ccfbf1;--co:#f97316;--g50:#f8fafc;--g100:#f1f5f9;--g200:#e2e8f0;--g300:#cbd5e1;--g500:#64748b;--g700:#334155;--g900:#0f172a;--w:#fff;--sh:0 4px 20px rgba(0,0,0,.08)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:var(--g50);color:var(--g900)}
+.hdr{background:var(--w);border-bottom:1px solid var(--g100);padding:14px 24px;display:flex;align-items:center;position:sticky;top:0;z-index:100}
+.logo{font-size:20px;font-weight:800;color:var(--t)}.logo span{color:var(--co)}
+.prog-wrap{background:var(--w);border-bottom:1px solid var(--g100);padding:14px 20px}
+.prog{display:flex;align-items:center;max-width:680px;margin:0 auto}
+.pdot{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;transition:.3s}
+.pdot.done{background:var(--t);color:var(--w)}
+.pdot.active{background:var(--t);color:var(--w);box-shadow:0 0 0 4px var(--tl)}
+.pdot.pend{background:var(--g100);color:var(--g500)}
+.pline{flex:1;height:2px;background:var(--g200);transition:.3s}
+.pline.done{background:var(--t)}
+.plbl{font-size:10px;color:var(--g500);margin-top:3px;text-align:center;white-space:nowrap}
+.main{max-width:700px;margin:28px auto;padding:0 16px 80px}
+.card{background:var(--w);border-radius:16px;box-shadow:var(--sh);padding:26px;margin-bottom:20px}
+.ctit{font-size:19px;font-weight:700;margin-bottom:4px}
+.csub{font-size:13px;color:var(--g500);margin-bottom:22px}
+/* type toggle */
+.ttog{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.tbtn{border:2px solid var(--g200);border-radius:14px;padding:20px 14px;text-align:center;cursor:pointer;transition:.2s}
+.tbtn:hover,.tbtn.sel{border-color:var(--t);background:var(--tl)}
+.tbtn .ic{font-size:34px;margin-bottom:8px}
+.tbtn .nm{font-weight:700;font-size:15px}
+.tbtn .ds{font-size:12px;color:var(--g500);margin-top:4px}
+.tbtn .fb{display:inline-block;margin-top:10px;padding:3px 12px;background:var(--t);color:var(--w);border-radius:20px;font-size:12px;font-weight:600}
+/* search */
+.sb{position:relative;margin-bottom:14px}
+.sb input{width:100%;padding:11px 14px 11px 38px;border:1px solid var(--g300);border-radius:10px;font-size:14px;font-family:inherit}
+.sb input:focus{outline:none;border-color:var(--t);box-shadow:0 0 0 3px var(--tl)}
+.sb .si{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--g500);font-size:14px}
+/* grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.gc{border:2px solid var(--g200);border-radius:12px;padding:14px;cursor:pointer;transition:.2s}
+.gc:hover,.gc.sel{border-color:var(--t);background:var(--tl)}
+.gc .gn{font-weight:600;font-size:13px}.gc .gs{font-size:11px;color:var(--g500);margin-top:2px}.gc .ge{font-size:22px;margin-bottom:6px}
+/* hospital / doctor rows */
+.row{border:2px solid var(--g200);border-radius:12px;padding:14px 16px;cursor:pointer;transition:.2s;display:flex;align-items:center;gap:14px;margin-bottom:10px}
+.row:hover,.row.sel{border-color:var(--t);background:var(--tl)}
+.av{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--w);font-size:20px;font-weight:700;flex-shrink:0}
+.rinfo .rn{font-weight:700;font-size:15px}.rinfo .rs{font-size:12px;color:var(--g500);margin-top:2px}
+.rinfo .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+.tag{font-size:11px;padding:2px 8px;border-radius:6px;background:var(--g100);color:var(--g700)}
+.tag.fee{background:#fef9c3;color:#854d0e}.tag.vd{background:#dbeafe;color:#1e40af}
+/* calendar */
+.calnav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.calnav button{border:1px solid var(--g200);background:var(--w);width:34px;height:34px;border-radius:8px;cursor:pointer;font-size:15px}
+.calnav .ml{font-weight:700;font-size:15px}
+.calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cdn{text-align:center;font-size:11px;font-weight:600;color:var(--g500);padding:5px 0}
+.cd{text-align:center;padding:8px 3px;border-radius:8px;font-size:13px;cursor:pointer;transition:.15s}
+.cd.e{pointer-events:none}.cd.past{color:var(--g300);pointer-events:none}
+.cd.blk{background:#fee2e2;color:#ef4444;pointer-events:none;text-decoration:line-through}
+.cd.sel{background:var(--t);color:var(--w);font-weight:700}
+.cd.av:hover{background:var(--tl)}.cd.tod{font-weight:700;color:var(--t)}
+.cl{display:flex;gap:14px;margin-top:10px;flex-wrap:wrap}
+.cl span{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--g500)}
+.cld{width:12px;height:12px;border-radius:3px}
+/* form */
+.fg{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.fg label{font-size:12px;font-weight:600;color:var(--g700)}
+.fg input,.fg select,.fg textarea{padding:10px 13px;border:1px solid var(--g300);border-radius:9px;font-size:14px;font-family:inherit;transition:.2s}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--t);box-shadow:0 0 0 3px var(--tl)}
+.fg textarea{resize:vertical;min-height:72px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.relwrap{display:flex;gap:8px}.relwrap select{width:110px;flex-shrink:0}
+/* buttons */
+.btn{padding:12px 26px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;border:none;font-family:inherit;transition:.2s}
+.btn-p{background:var(--t);color:var(--w);width:100%}.btn-p:hover{background:var(--td)}.btn-p:disabled{background:var(--g300);cursor:not-allowed}
+.btn-bk{background:none;border:none;color:var(--g500);cursor:pointer;font-size:13px;display:flex;align-items:center;gap:4px;padding:0;font-family:inherit}
+/* receipt */
+.rcpt{border:2px dashed var(--g300);border-radius:14px;padding:24px;background:var(--g50)}
+.tok{font-size:60px;font-weight:800;color:var(--t);text-align:center;letter-spacing:2px;line-height:1;margin:12px 0}
+.rrow{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--g100);font-size:13px}
+.rrow:last-child{border:none}.rl{color:var(--g500)}.rv{font-weight:600}
+/* alerts */
+.al{padding:11px 14px;border-radius:8px;font-size:13px;margin-bottom:12px;display:flex;gap:8px;align-items:flex-start}
+.al-i{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}
+.al-w{background:#fffbeb;color:#92400e;border:1px solid #fde68a}
+.al-s{background:#f0fdf4;color:#166534;border:1px solid #bbf7d0}
+/* video */
+.vbanner{background:linear-gradient(135deg,#1e40af,#0d9488);color:var(--w);border-radius:12px;padding:20px;margin-bottom:16px}
+.vbanner h3{font-size:17px;font-weight:700;margin-bottom:6px}.vbanner p{font-size:13px;opacity:.85;margin-bottom:14px}
+.jbtn{background:var(--w);color:#1e40af;padding:10px 22px;border-radius:8px;font-weight:700;font-size:14px;text-decoration:none;display:inline-block}
+/* pay */
+.pcard{border:2px solid #fbbf24;border-radius:12px;padding:18px;background:#fffbeb;margin-bottom:16px}
+.pamount{font-size:38px;font-weight:800}
+/* loader */
+.ldr{text-align:center;padding:32px;color:var(--g500);display:none}
+.sp{width:34px;height:34px;border:3px solid var(--g200);border-top-color:var(--t);border-radius:50%;animation:sp .8s linear infinite;margin:0 auto 10px}
+@keyframes sp{to{transform:rotate(360deg)}}
+@media(max-width:540px){.frow{grid-template-columns:1fr}.ttog{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="hdr"><div class="logo">Doc<span>Ease</span></div><span style="color:var(--g500);font-size:13px;margin-left:auto">Free for patients</span></div>
+<div class="prog-wrap"><div class="prog" id="prog"></div></div>
+<div class="main" id="main">
+
+<!-- S1: TYPE -->
+<div id="s1" class="card">
+  <div class="ctit">Choose Appointment Type</div>
+  <div class="csub">How would you like to consult?</div>
+  <div class="ttog">
+    <div class="tbtn" onclick="pickType('in-person',this)">
+      <div class="ic">🏥</div><div class="nm">In-Person Visit</div>
+      <div class="ds">Visit hospital · Get token<br>Show at reception</div>
+      <div class="fb">FREE Booking</div>
+    </div>
+    <div class="tbtn" onclick="pickType('video',this)">
+      <div class="ic">📹</div><div class="nm">Video Consult</div>
+      <div class="ds">Online consultation<br>Doctor approves timeslot</div>
+      <div class="fb">Hospital's fee applies</div>
+    </div>
+  </div>
+  <div id="vNote" class="al al-i" style="display:none">ℹ️ Video consult requests need doctor approval. Once approved, you'll get a WhatsApp payment link. Only available at Pro-plan hospitals.</div>
+  <button class="btn btn-p" id="b1" onclick="go(2)" disabled>Continue →</button>
+</div>
+
+<!-- S2: STATE -->
+<div id="s2" class="card" style="display:none">
+  <button class="btn-bk" onclick="go(1)">← Back</button>
+  <div class="ctit" style="margin-top:14px">Select State</div>
+  <div class="csub">Where are you looking for a hospital?</div>
+  <div class="sb"><span class="si">🔍</span><input type="text" id="stSrch" placeholder="Search state..." oninput="filterSt()"></div>
+  <div class="ldr" id="stLdr"><div class="sp"></div>Loading states...</div>
+  <div class="grid" id="stGrid"></div>
+</div>
+
+<!-- S3: HOSPITAL -->
+<div id="s3" class="card" style="display:none">
+  <button class="btn-bk" onclick="go(2)">← Back</button>
+  <div class="ctit" style="margin-top:14px">Select Hospital</div>
+  <div class="csub" id="s3sub"></div>
+  <div class="sb"><span class="si">🔍</span><input type="text" id="hSrch" placeholder="Search hospital..." oninput="filterH()"></div>
+  <div class="ldr" id="hLdr"><div class="sp"></div>Loading hospitals...</div>
+  <div id="hList"></div>
+</div>
+
+<!-- S4: DOCTOR -->
+<div id="s4" class="card" style="display:none">
+  <button class="btn-bk" onclick="go(3)">← Back</button>
+  <div class="ctit" style="margin-top:14px">Select Doctor</div>
+  <div class="csub" id="s4sub"></div>
+  <div class="ldr" id="dLdr"><div class="sp"></div>Loading doctors...</div>
+  <div id="dList"></div>
+</div>
+
+<!-- S5: DATE (in-person only) -->
+<div id="s5" class="card" style="display:none">
+  <button class="btn-bk" onclick="go(4)">← Back</button>
+  <div class="ctit" style="margin-top:14px">Select Date</div>
+  <div class="csub">Choose preferred appointment date (max 1 month ahead)</div>
+  <div class="calnav"><button onclick="prevM()">‹</button><span class="ml" id="calLbl"></span><button onclick="nextM()">›</button></div>
+  <div class="calgrid" id="calG"></div>
+  <div class="cl">
+    <span><div class="cld" style="background:var(--t)"></div>Selected</span>
+    <span><div class="cld" style="background:#fee2e2;border:1px solid #ef4444"></div>Blocked</span>
+    <span><div class="cld" style="background:var(--g100)"></div>Past / Out of range</span>
+  </div>
+  <button class="btn btn-p" id="b5" onclick="go(6)" disabled style="margin-top:18px">Continue →</button>
+</div>
+
+<!-- S6: DETAILS -->
+<div id="s6" class="card" style="display:none">
+  <button class="btn-bk" id="bk6" onclick="bk6()">← Back</button>
+  <div class="ctit" style="margin-top:14px">Patient Details</div>
+  <div class="csub">Fill in the patient information</div>
+  <div class="fg"><label>Patient Full Name *</label><input type="text" id="pName" placeholder="As per Aadhaar"></div>
+  <div class="fg"><label>Relation *</label><div class="relwrap"><select id="relT"><option>S/O</option><option>D/O</option><option>W/O</option><option>C/O</option></select><input type="text" id="rel" placeholder="Father / Spouse name"></div></div>
+  <div class="frow">
+    <div class="fg" style="margin:0"><label>Aadhaar Last 4 Digits</label><input type="text" id="aadh" placeholder="XXXX" maxlength="4"></div>
+    <div class="fg" style="margin:0"><label>Age *</label><input type="number" id="age" placeholder="Years" min="1" max="120"></div>
+  </div>
+  <div class="frow">
+    <div class="fg" style="margin:0"><label>Gender *</label><select id="gen"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></div>
+    <div class="fg" style="margin:0"><label>Mobile *</label><input type="tel" id="mob" placeholder="10-digit" maxlength="10"></div>
+  </div>
+  <div class="fg"><label>Address</label><input type="text" id="addr" placeholder="Village / Town, District"></div>
+  <div class="fg"><label>Chief Complaint / Symptoms *</label><textarea id="comp" placeholder="Describe symptoms or reason for visit..."></textarea></div>
+  <div id="vDetailNote" class="al al-i" style="display:none">📹 <strong>Video Consult:</strong> After submitting, doctor will review and approve a timeslot. Payment link will be sent on WhatsApp after approval.</div>
+  <button class="btn btn-p" id="bSub" onclick="submit()">Confirm Booking</button>
+</div>
+
+<!-- S7: DONE -->
+<div id="s7" style="display:none">
+  <!-- in-person -->
+  <div id="done-ip" class="card">
+    <div style="text-align:center;margin-bottom:18px"><div style="font-size:44px">✅</div><div class="ctit">Appointment Confirmed!</div></div>
+    <div class="rcpt">
+      <div style="text-align:center;font-size:13px;color:var(--g500);font-weight:600">YOUR TOKEN NUMBER</div>
+      <div class="tok" id="tokShow"></div>
+      <div id="ipDetails"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px">
+      <button class="btn" style="border:2px solid var(--t);color:var(--t);background:var(--w)" onclick="window.print()">🖨️ Print</button>
+      <button class="btn btn-p" onclick="openWA()">📲 WhatsApp</button>
+    </div>
+  </div>
+  <!-- video pending -->
+  <div id="done-vp" class="card" style="display:none">
+    <div style="text-align:center;margin-bottom:18px"><div style="font-size:44px">⏳</div><div class="ctit">Request Submitted!</div><div class="csub">Waiting for doctor approval</div></div>
+    <div class="al al-w">📱 Doctor will approve & assign timeslot. You'll get a WhatsApp message with the payment link.</div>
+    <div class="rcpt" id="vpDetails"></div>
+    <button class="btn btn-p" style="margin-top:16px" onclick="openWA()">📲 Send via WhatsApp</button>
+  </div>
+  <!-- video pay (URL-launched) -->
+  <div id="done-pay" class="card" style="display:none">
+    <div style="text-align:center;margin-bottom:18px"><div style="font-size:44px">💳</div><div class="ctit">Complete Payment</div><div class="csub">Your video consult has been approved!</div></div>
+    <div class="pcard"><div class="pamount" id="payAmt">₹500</div><div style="font-size:13px;color:var(--g500)">Video Consultation Fee</div><div id="payMeta" style="margin-top:8px;font-size:13px;color:var(--g700)"></div></div>
+    <button class="btn btn-p" onclick="doPayment()">Pay & Get Video Link →</button>
+  </div>
+  <!-- video confirmed -->
+  <div id="done-vc" class="card" style="display:none">
+    <div style="text-align:center;margin-bottom:18px"><div style="font-size:44px">🎉</div><div class="ctit">Payment Successful!</div><div class="csub">Your video consult is confirmed</div></div>
+    <div class="vbanner"><h3>🎥 Video Call Ready</h3><p>Join at your scheduled time. Use Chrome browser for best experience.</p><a id="joinBtn" href="#" target="_blank" class="jbtn">Join Video Call →</a></div>
+    <div class="rcpt" id="vcDetails"></div>
+    <button class="btn btn-p" style="margin-top:14px" onclick="openWA()">📲 Save on WhatsApp</button>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+const B = DC.BACKEND;
+let S = { step:1, type:null, state:null, hospital:null, doctor:null, date:null, aptId:null, token:null, waLink:null };
+let allSt=[], allH=[], allD=[], cyY, cyM;
+// URL params for payment flow
+const QS = new URLSearchParams(location.search);
+
+// ---- PROGRESS ----
+function renderProg(){
+  const labels = S.type==="video"
+    ? ["Type","State","Hospital","Doctor","Details","Done"]
+    : ["Type","State","Hospital","Doctor","Date","Details","Done"];
+  const wrap = document.getElementById("prog"); wrap.innerHTML="";
+  labels.forEach((l,i)=>{
+    const n=i+1;
+    const cls = n<S.step?"done":n===S.step?"active":"pend";
+    const col=document.createElement("div"); col.style.cssText="display:flex;flex-direction:column;align-items:center;";
+    col.innerHTML=`<div class="pdot ${cls}">${n<S.step?"✓":n}</div><div class="plbl">${l}</div>`;
+    if(i>0){const ln=document.createElement("div");ln.className="pline"+(n<=S.step?" done":"");ln.style.cssText="flex:1;height:2px;margin:0 3px 14px";wrap.appendChild(ln);}
+    wrap.appendChild(col);
+  });
+}
+
+// ---- NAVIGATION ----
+function go(n){
+  hide("s"+S.step);
+  if(S.type==="video"&&n===5) n=6;
+  S.step=n;
+  const el=document.getElementById("s"+n);
+  if(el){el.style.display="block";window.scrollTo(0,0);}
+  renderProg();
+  if(n===2) loadStates();
+  if(n===3) loadHospitals();
+  if(n===4) loadDoctors();
+  if(n===5) initCal();
+}
+function hide(id){const e=document.getElementById(id);if(e)e.style.display="none";}
+function bk6(){ hide("s6"); S.step=S.type==="video"?4:5; document.getElementById("s"+(S.type==="video"?4:5)).style.display="block"; renderProg(); }
+
+// ---- S1 TYPE ----
+function pickType(t,el){
+  S.type=t;
+  document.querySelectorAll(".tbtn").forEach(b=>b.classList.remove("sel"));
+  el.classList.add("sel");
+  document.getElementById("b1").disabled=false;
+  document.getElementById("vNote").style.display=t==="video"?"flex":"none";
+}
+
+// ---- S2 STATES ----
+async function loadStates(){
+  const g=document.getElementById("stGrid"); g.innerHTML="";
+  const l=document.getElementById("stLdr"); l.style.display="block";
+  try{
+    const r=await api({action:"getStates"});
+    allSt=r.states||[]; l.style.display="none"; renderSt(allSt);
+  }catch(e){l.innerHTML="⚠️ Could not load. Check connection.";}
+}
+const stEmoji={"Uttar Pradesh":"🏰","Delhi":"🏛️","Maharashtra":"🏙️","Rajasthan":"🏜️","Gujarat":"🌊","Karnataka":"🌿","Tamil Nadu":"🌺","Telangana":"🔭","Punjab":"🌾","Haryana":"🌾","Bihar":"🕌","West Bengal":"🐯","Kerala":"🌴","Madhya Pradesh":"🌳","Odisha":"🛕","Jharkhand":"⛏️","Assam":"🫖"};
+function renderSt(list){
+  document.getElementById("stGrid").innerHTML=list.map(s=>`
+    <div class="gc ${S.state===s?"sel":""}" onclick="pickSt('${s}')">
+      <div class="ge">${stEmoji[s]||"📍"}</div>
+      <div class="gn">${s}</div>
+    </div>`).join("");
+}
+function filterSt(){const q=document.getElementById("stSrch").value.toLowerCase();renderSt(allSt.filter(s=>s.toLowerCase().includes(q)));}
+function pickSt(s){S.state=s;renderSt(allSt);setTimeout(()=>go(3),180);}
+
+// ---- S3 HOSPITALS ----
+async function loadHospitals(){
+  document.getElementById("s3sub").textContent="Hospitals in "+S.state;
+  const l=document.getElementById("hLdr");l.style.display="block";document.getElementById("hList").innerHTML="";
+  try{
+    const r=await api({action:"getHospitals",state:S.state});
+    allH=r.hospitals||[];l.style.display="none";renderH(allH);
+  }catch(e){l.innerHTML="⚠️ Could not load hospitals.";}
+}
+function renderH(list){
+  if(!list.length){document.getElementById("hList").innerHTML=`<div class="al al-w">⚠️ No hospitals found in this state yet.</div>`;return;}
+  document.getElementById("hList").innerHTML=list.map(h=>`
+    <div class="row ${S.hospital?.hospitalId===h.hospitalId?"sel":""}" onclick="pickH(${esc(h)})">
+      <div class="av" style="background:#6366f1">🏥</div>
+      <div class="rinfo">
+        <div class="rn">${h.name} ${h.plan==="pro"?'<span style="background:#dbeafe;color:#1e40af;font-size:11px;padding:2px 7px;border-radius:10px">📹 Pro</span>':''}</div>
+        <div class="rs">📍 ${h.address}</div>
+        <div class="tags"><span class="tag">${h.specializations||"General"}</span></div>
+      </div>
+    </div>`).join("");
+}
+function filterH(){const q=document.getElementById("hSrch").value.toLowerCase();renderH(allH.filter(h=>h.name.toLowerCase().includes(q)||(h.address||"").toLowerCase().includes(q)));}
+function pickH(h){S.hospital=h;renderH(allH);setTimeout(()=>go(4),180);}
+
+// ---- S4 DOCTORS ----
+async function loadDoctors(){
+  document.getElementById("s4sub").textContent="Doctors at "+S.hospital.name;
+  const l=document.getElementById("dLdr");l.style.display="block";document.getElementById("dList").innerHTML="";
+  try{
+    const r=await api({action:"getDoctors",hospitalId:S.hospital.hospitalId});
+    allD=r.doctors||[];
+    if(S.type==="video") allD=allD.filter(d=>d.videoEnabled==="true");
+    l.style.display="none";renderD(allD);
+  }catch(e){l.innerHTML="⚠️ Could not load doctors.";}
+}
+function renderD(list){
+  if(!list.length){document.getElementById("dList").innerHTML=`<div class="al al-w">⚠️ ${S.type==="video"?"No doctors available for video consult at this hospital.":"No active doctors found."}</div>`;return;}
+  document.getElementById("dList").innerHTML=list.map(d=>`
+    <div class="row ${S.doctor?.doctorId===d.doctorId?"sel":""}" onclick="pickD(${esc(d)})">
+      <div class="av" style="background:var(--t)">${d.name[0]}</div>
+      <div class="rinfo">
+        <div class="rn">Dr. ${d.name} ${d.videoEnabled==="true"?'<span class="tag vd">📹 Video</span>':''}</div>
+        <div class="rs">${d.specialization}${d.qualification?" · "+d.qualification:""}</div>
+        <div class="tags">
+          <span class="tag">${d.experience||0} yrs exp</span>
+          <span class="tag fee">Visit: ₹${d.visitFee||200}</span>
+          ${d.videoEnabled==="true"?`<span class="tag vd">Video: ₹${d.videoFee||500}</span>`:""}
+        </div>
+      </div>
+    </div>`).join("");
+}
+function pickD(d){S.doctor=d;renderD(allD);setTimeout(()=>go(S.type==="video"?6:5),180);}
+
+// ---- S5 CALENDAR ----
+function initCal(){const n=new Date();cyY=n.getFullYear();cyM=n.getMonth();renderCal();}
+const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+function renderCal(){
+  document.getElementById("calLbl").textContent=MONTHS[cyM]+" "+cyY;
+  const blocked=(S.doctor?.blockedDates||"").split(",").filter(Boolean);
+  const now=new Date();now.setHours(0,0,0,0);
+  const maxD=new Date();maxD.setMonth(maxD.getMonth()+1);
+  const DAYS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  let h=DAYS.map(d=>`<div class="cdn">${d}</div>`).join("");
+  const first=new Date(cyY,cyM,1).getDay();
+  for(let i=0;i<first;i++)h+=`<div class="cd e"></div>`;
+  const total=new Date(cyY,cyM+1,0).getDate();
+  for(let d=1;d<=total;d++){
+    const ds=cyY+"-"+pad(cyM+1)+"-"+pad(d);
+    const dt=new Date(cyY,cyM,d);
+    const isT=dt.getTime()===now.getTime();
+    const isPast=dt<now,isBlk=blocked.includes(ds),isFar=dt>maxD;
+    const isSel=S.date===ds;
+    let cls="cd ";
+    if(isPast||isFar)cls+="past";
+    else if(isBlk)cls+="blk";
+    else if(isSel)cls+="sel";
+    else{cls+="av";if(isT)cls+=" tod";}
+    h+=`<div class="${cls}" ${(!isPast&&!isBlk&&!isFar)?`onclick="pickDate('${ds}')"`:""} >${d}</div>`;
+  }
+  document.getElementById("calG").innerHTML=h;
+}
+function pad(n){return String(n).padStart(2,"0");}
+function pickDate(d){S.date=d;document.getElementById("b5").disabled=false;renderCal();}
+function prevM(){if(cyM===0){cyM=11;cyY--;}else cyM--;renderCal();}
+function nextM(){if(cyM===11){cyM=0;cyY++;}else cyM++;renderCal();}
+
+// ---- S6 SUBMIT ----
+async function submit(){
+  const nm=v("pName"),ag=v("age"),gn=v("gen"),mb=v("mob"),cp=v("comp");
+  if(!nm||!ag||!gn||!mb||!cp){alert("Fill all required fields (*)");return;}
+  if(mb.length!==10){alert("Enter valid 10-digit mobile");return;}
+  const btn=document.getElementById("bSub");btn.disabled=true;btn.textContent="Submitting...";
+  try{
+    const payload={
+      action:S.type==="video"?"requestVideoConsult":"bookAppointment",
+      hospitalId:S.hospital.hospitalId, hospitalName:S.hospital.name,
+      doctorId:S.doctor.doctorId, doctorName:S.doctor.name,
+      patientName:nm, relation:v("rel"), relationType:v("relT"),
+      aadhaar:v("aadh"), age:ag, gender:gn, mobile:mb,
+      address:v("addr"), complaint:cp, date:S.date||""
+    };
+    const r=await api(payload);
+    btn.disabled=false;btn.textContent="Confirm Booking";
+    if(!r.ok){alert("Error: "+r.error);return;}
+    S.aptId=r.aptId;S.token=r.token;S.waLink=r.waLink;S.videoRoomId=r.roomId;
+    showDone(r);
+  }catch(e){btn.disabled=false;btn.textContent="Confirm Booking";alert("Network error. Please try again.");}
+}
+function v(id){return document.getElementById(id).value.trim();}
+
+function showDone(r){
+  hide("s6");document.getElementById("s7").style.display="block";S.step=7;renderProg();window.scrollTo(0,0);
+  hide("done-ip");hide("done-vp");hide("done-pay");hide("done-vc");
+  if(S.type==="in-person"){
+    document.getElementById("done-ip").style.display="block";
+    document.getElementById("tokShow").textContent=r.token;
+    document.getElementById("ipDetails").innerHTML=rrow("Hospital",S.hospital.name)+rrow("Doctor","Dr. "+S.doctor.name)+rrow("Date",S.date)+rrow("Patient",v("pName")||document.getElementById("pName").value)+rrow("Ref ID",r.aptId)+`<div style="margin-top:14px;padding:10px;background:#fffbeb;border-radius:8px;font-size:12px;color:#92400e">💰 Consultation fee payable at hospital reception</div>`;
+  }else{
+    document.getElementById("done-vp").style.display="block";
+    document.getElementById("vpDetails").innerHTML=rrow("Hospital",S.hospital.name)+rrow("Doctor","Dr. "+S.doctor.name)+rrow("Patient",document.getElementById("pName").value)+rrow("Mobile",document.getElementById("mob").value)+rrow("Request ID",r.aptId);
+  }
+}
+function rrow(l,v){return `<div class="rrow"><span class="rl">${l}</span><span class="rv">${v}</span></div>`;}
+
+// ---- PAYMENT FLOW (URL-based, doctor approved) ----
+function initPaymentFlow(){
+  const aptId=QS.get("aptId"),fee=QS.get("fee"),room=QS.get("room"),rzp=QS.get("rzp");
+  if(!aptId||!fee)return;
+  S.aptId=aptId;S.videoRoomId=room;S.rzpKey=rzp;
+  hide("s1");document.getElementById("s7").style.display="block";S.step=7;renderProg();
+  hide("done-ip");hide("done-vp");hide("done-vc");
+  document.getElementById("done-pay").style.display="block";
+  document.getElementById("payAmt").textContent="₹"+fee;
+  document.getElementById("payMeta").textContent="Appointment ID: "+aptId;
+  window._payFee=Number(fee);
+}
+
+async function doPayment(){
+  const fee=window._payFee||500;
+  const rzpKey=S.rzpKey||DC.RZP_KEY;
+  // Create order via backend (will use hospital's RZP key to create order)
+  // For patient payments, we call backend to create order using hospital's key
+  try{
+    const r=await api({action:"createPatientOrder",aptId:S.aptId,fee,rzpKeyId:rzpKey});
+    if(!r.ok&&!r.order){
+      // Fallback: use key directly if backend doesn't support it
+      openRazorpay(rzpKey,fee,null);return;
+    }
+    openRazorpay(rzpKey,fee,r.order?.id);
+  }catch(e){openRazorpay(rzpKey,fee,null);}
+}
+
+function openRazorpay(key,fee,orderId){
+  const opts={
+    key,amount:fee*100,currency:"INR",
+    name:"DocEase Video Consult",description:"Online Consultation Fee",
+    handler:async(resp)=>{
+      // Notify backend
+      try{
+        const r=await api({action:"verifyPatientPayment",aptId:S.aptId,
+          orderId:resp.razorpay_order_id||"",payId:resp.razorpay_payment_id});
+        S.waLink=r.waLink;
+        showVideoConfirmed(fee,r.joinUrl);
+      }catch(e){showVideoConfirmed(fee,"https://meet.jit.si/"+S.videoRoomId);}
+    },
+    theme:{color:"#0d9488"}
+  };
+  if(orderId)opts.order_id=orderId;
+  new Razorpay(opts).open();
+}
+
+function showVideoConfirmed(fee,joinUrl){
+  if(!joinUrl)joinUrl="https://meet.jit.si/"+S.videoRoomId;
+  hide("done-pay");document.getElementById("done-vc").style.display="block";
+  document.getElementById("joinBtn").href=joinUrl;
+  document.getElementById("vcDetails").innerHTML=rrow("Amount Paid","₹"+fee)+rrow("Join Link",`<a href="${joinUrl}" target="_blank" style="color:var(--t)">Click to Join</a>`);
+}
+
+function openWA(){if(S.waLink)window.open(S.waLink,"_blank");else alert("WhatsApp link not available.");}
+async function api(body){
+  if(body.action==="getStates"||body.action==="getHospitals"||body.action==="getDoctors"){
+    const params=new URLSearchParams({...body});
+    const r=await fetch(B+"?"+params);return await r.json();
+  }
+  const r=await fetch(B,{method:"POST",body:JSON.stringify(body)});return await r.json();
+}
+function esc(obj){return JSON.stringify(obj).replace(/"/g,"&quot;");}
+
+window.onload=()=>{
+  S.step=1;renderProg();
+  document.getElementById("vDetailNote").style.display="none";
+  initPaymentFlow();
+};
+document.getElementById("s6").addEventListener("input",()=>{
+  document.getElementById("vDetailNote").style.display=S.type==="video"?"flex":"none";
+});
+</script>
+</body>
+</html>
