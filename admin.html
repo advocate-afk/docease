@@ -76,6 +76,7 @@ tr:last-child td{border:none}
     <div class="brand">Doc<span>Ease</span> <span style="color:var(--g500);font-size:12px;font-weight:400">Admin</span></div>
     <span class="badge" id="pendingBadge" style="display:none">0 Pending</span>
     <span style="margin-left:auto;color:var(--g500);font-size:12px" id="navDate"></span>
+    <button onclick="adminLogout()" style="margin-left:16px;background:rgba(239,68,68,.15);border:none;color:#fca5a5;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit">🚪 Logout</button>
   </div>
   <div class="tabs">
     <div class="tab on" onclick="tab('overview',this)">📊 Overview</div>
@@ -160,8 +161,10 @@ tr:last-child td{border:none}
     <div class="fg"><label>Duration (months)</label><select id="kMonths"><option value="1">1 Month</option><option value="3">3 Months</option><option value="6">6 Months</option><option value="12">12 Months (1 Year)</option></select></div>
     <button class="btn btn-p" style="width:100%;margin-bottom:12px" onclick="genKey()">Generate Key</button>
     <div id="keyResult" style="display:none">
+      <div style="font-size:12px;color:var(--g500);margin-bottom:6px;text-align:center">Key generated successfully!</div>
       <div class="kdisp" id="keyDisplay"></div>
-      <button class="btn" style="width:100%;border:1px solid var(--g300)" onclick="copyKey()">📋 Copy Key</button>
+      <button class="btn" style="width:100%;border:1px solid var(--g300);margin-bottom:8px" onclick="copyKey()">📋 Copy Key</button>
+      <button class="btn btn-p" style="width:100%;font-size:12px" onclick="closeMo('mGenKey');loadKeys();">✓ Done — View in Keys Tab</button>
     </div>
   </div>
 </div>
@@ -169,6 +172,14 @@ tr:last-child td{border:none}
 <script>
 const B=DC.BACKEND,PASS=DC.ADMIN_PASS;
 let allHospitals=[], stats={};
+
+function adminLogout(){
+  if(confirm("Logout from admin panel?")){
+    document.getElementById("adminDash").style.display="none";
+    document.getElementById("loginScreen").style.display="flex";
+    document.getElementById("pass").value="";
+  }
+}
 
 function login(){
   const p=document.getElementById("pass").value;
@@ -279,17 +290,14 @@ async function addHospital(){
   const name=document.getElementById("ahName").value.trim();
   const email=document.getElementById("ahEmail").value.trim();
   if(!name||!email){alert("Name and email required");return;}
-  const r=await post({action:"registerHospital",name,email,
+  const r=await post({action:"adminAddHospital",passcode:PASS,
+    name,email,
     phone:document.getElementById("ahPhone").value,
     address:document.getElementById("ahAddr").value,
-    state:document.getElementById("ahState").value});
-  if(r.ok){
-    // Auto-approve
-    const allR=await post({action:"getAllHospitals",passcode:PASS});
-    const h=allR.hospitals?.find(x=>x.email===email);
-    if(h)await post({action:"approveHospital",hospitalId:h.hospitalId,passcode:PASS,baseUrl:DC.BASE_URL});
-    closeMo("mAddH");loadStats();alert("Hospital added and approved!");
-  }else alert("Error: "+r.error);
+    state:document.getElementById("ahState").value,
+    baseUrl:DC.BASE_URL});
+  if(r.ok){closeMo("mAddH");loadStats();alert("✅ Hospital added and activated! They can now login.");}
+  else alert("Error: "+r.error);
 }
 
 async function genKey(){
@@ -303,11 +311,21 @@ async function genKey(){
 }
 
 async function loadKeys(){
-  // Get from stats — keys are shown from admin stats
-  // Reload stats and show keys
-  await loadStats();
-  // For now show message
-  document.getElementById("keyTbl").innerHTML=`<tr><td colspan="6" style="text-align:center;color:var(--g500);padding:16px">Generate keys using the button above. Keys appear after page reload.</td></tr>`;
+  try{
+    const r=await post({action:"getAdminStats",passcode:PASS});
+    if(!r.ok)return;
+    const keys=r.licenseKeys||[];
+    document.getElementById("keyTbl").innerHTML=keys.length===0
+      ?`<tr><td colspan="6" style="text-align:center;color:var(--g500);padding:20px">No keys generated yet. Use "+ Generate Key" button above.</td></tr>`
+      :keys.slice().reverse().map(k=>`<tr>
+          <td><code style="font-size:12px;font-weight:700;color:#0d9488">${k.key}</code></td>
+          <td><span class="badge2 ${k.type==="pro"?"bpu":"bgr"}">${(k.type||"basic").toUpperCase()}</span></td>
+          <td>${k.months||1} month(s)</td>
+          <td>${k.hospitalId||'<span style="color:#94a3b8">Unused</span>'}</td>
+          <td>${k.usedAt?k.usedAt.split("T")[0]:'<span style="color:#22c55e">Available</span>'}</td>
+          <td style="font-size:11px;color:#94a3b8">${k.createdAt?k.createdAt.split("T")[0]:'—'}</td>
+        </tr>`).join("");
+  }catch(e){document.getElementById("keyTbl").innerHTML=`<tr><td colspan="6" style="color:red;padding:16px">Error loading keys.</td></tr>`;}
 }
 
 function copyKey(){
