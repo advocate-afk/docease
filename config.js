@@ -17,7 +17,7 @@ const DC = {
 
   // ── 3. GitHub Pages URL (GitHub deploy ke baad) ──
   //    Example: https://prakash123.github.io/docease/
-  BASE_URL: "https://advocate-afk.github.io/docease/",
+  BASE_URL: "https://docease.in/",
 
   // ── 4. Admin passcode (same as Code.gs mein) ──
   ADMIN_PASS: "6835",
