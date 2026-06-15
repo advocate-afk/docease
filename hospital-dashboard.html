@@ -176,7 +176,7 @@ tr:last-child td{border:none}
         <option value="">All</option><option value="confirmed">Confirmed</option><option value="pending">Video Pending</option><option value="approved">Video Approved</option><option value="cancelled">Cancelled</option>
       </select>
     </div>
-    <div class="sec"><table><thead><tr><th>Token</th><th>Patient</th><th>Doctor</th><th>Date</th><th>Type</th><th>Payment</th><th>Status</th></tr></thead><tbody id="aptTbl"></tbody></table></div>
+    <div class="sec"><table><thead><tr><th>Token</th><th>Patient</th><th>Doctor</th><th>Date</th><th>Type</th><th>Payment</th><th>Status</th><th>Print</th></tr></thead><tbody id="aptTbl"></tbody></table></div>
   </div>
 
   <!-- VIDEO -->
@@ -409,6 +409,7 @@ function renderApts(){
       <td>${a.type==="video"?'<span class="badge bpu">📹 Video</span>':'<span class="badge bgr">🏥</span>'}</td>
       <td>${a.payStatus==="paid"?'<span class="badge bg">Paid</span>':a.payStatus==="na"?'<span class="badge bgr">N/A</span>':'<span class="badge by">Pending</span>'}</td>
       <td>${sBadge(a.status)}</td>
+      <td><button class="abtn ab" onclick="printApt(${JSON.stringify(a).replace(/"/g,'&quot;')})">🖨️ Print</button></td>
     </tr>`).join("");
 }
 
@@ -660,6 +661,75 @@ function closeMo(id){document.getElementById(id).classList.remove("show");}
 async function post(body){const r=await fetch(B,{method:"POST",body:JSON.stringify(body)});return r.json();}
 
 window.onload=init;
+
+// ---- PRINT APPOINTMENT ----
+function printApt(a){
+  const hosp=session||{};
+  const w=window.open('','_blank','width=794,height=1123');
+  w.document.write(`<!DOCTYPE html><html><head><title>Appointment — ${a.token||''}</title>
+  <style>
+    @page{size:A4;margin:20mm}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Arial',sans-serif;font-size:13px;color:#111;padding:20px}
+    .top{text-align:center;border-bottom:3px solid #0d9488;padding-bottom:16px;margin-bottom:20px}
+    .top h1{font-size:22px;font-weight:900;color:#0d9488;letter-spacing:1px}
+    .top .hsub{font-size:13px;color:#555;margin-top:4px}
+    .token-box{text-align:center;margin:16px 0;padding:14px;background:#f0fdf4;border:2px solid #0d9488;border-radius:10px}
+    .token-box .tl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#0d9488}
+    .token-box .tv{font-size:52px;font-weight:900;color:#0d9488;line-height:1}
+    .body-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:16px 0}
+    .section-box{border:1px solid #ddd;border-radius:8px;padding:14px}
+    .section-box h3{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#0d9488;margin-bottom:10px;border-bottom:1px solid #eee;padding-bottom:6px}
+    .row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f5f5f5;font-size:12px}
+    .row:last-child{border:none}
+    .row .lbl{color:#666}.row .val{font-weight:700;text-align:right;max-width:60%}
+    .footer-box{border:1px solid #ddd;border-radius:8px;padding:14px;margin-top:16px;text-align:center;background:#f8fafc}
+    .footer-box .fn{font-size:16px;font-weight:800;color:#0d9488}
+    .footer-box .fa{font-size:12px;color:#555;margin-top:3px}
+    .footer-box .fp{font-size:12px;color:#555}
+    .notice{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;margin-top:14px;font-size:12px;color:#92400e;text-align:center}
+    .ref{text-align:center;margin-top:10px;font-size:10px;color:#aaa}
+  </style></head><body>
+  <div class="top">
+    <h1>${hosp.name||'Hospital'}</h1>
+    <div class="hsub">${hosp.address||''} ${hosp.phone?'· '+hosp.phone:''}</div>
+  </div>
+  <div class="token-box">
+    <div class="tl">Token Number</div>
+    <div class="tv">${a.token||'—'}</div>
+  </div>
+  <div class="body-grid">
+    <div class="section-box">
+      <h3>Doctor Details</h3>
+      <div class="row"><span class="lbl">Doctor</span><span class="val">Dr. ${a.doctorName||'—'}</span></div>
+      <div class="row"><span class="lbl">Date</span><span class="val">${a.date||'—'}</span></div>
+      <div class="row"><span class="lbl">Type</span><span class="val">${a.type==='video'?'Video Consult':'In-Person Visit'}</span></div>
+    </div>
+    <div class="section-box">
+      <h3>Patient Details</h3>
+      <div class="row"><span class="lbl">Name</span><span class="val">${a.patientName||'—'}</span></div>
+      <div class="row"><span class="lbl">Relation</span><span class="val">${a.relationType||''} ${a.relation||'—'}</span></div>
+      <div class="row"><span class="lbl">Age / Gender</span><span class="val">${a.age||'—'} yrs / ${a.gender||'—'}</span></div>
+      <div class="row"><span class="lbl">Mobile</span><span class="val">${a.mobile||'—'}</span></div>
+      ${a.aadhaar?`<div class="row"><span class="lbl">Aadhaar (Last 4)</span><span class="val">XXXX-XXXX-${a.aadhaar}</span></div>`:''}
+    </div>
+  </div>
+  <div class="section-box" style="margin-top:0">
+    <h3>Chief Complaint</h3>
+    <div style="padding:6px 0;font-size:13px">${a.complaint||'—'}</div>
+  </div>
+  <div class="notice">💰 Consultation fee payable at hospital reception · Please arrive 15 minutes early</div>
+  <div class="footer-box" style="margin-top:16px">
+    <div class="fn">${hosp.name||'Hospital'}</div>
+    <div class="fa">${hosp.address||''}</div>
+    <div class="fp">${hosp.phone?'📞 '+hosp.phone:''}</div>
+  </div>
+  <div class="ref">Ref: ${a.aptId||'—'} · Printed on ${new Date().toLocaleString('en-IN')}</div>
+  </body></html>`);
+  w.document.close();
+  w.focus();
+  setTimeout(()=>w.print(),400);
+}
 </script>
 </body>
 </html>
