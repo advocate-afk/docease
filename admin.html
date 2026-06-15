@@ -312,22 +312,26 @@ async function genKey(){
 
 async function loadKeys(){
   try{
-    const r=await post({action:"getAdminStats",passcode:PASS});
-    if(!r.ok)return;
-    const keys=r.licenseKeys||[];
+    const url=B+"?action=getAdminStats&passcode="+encodeURIComponent(PASS);
+    const r=await fetch(url);
+    const d=await r.json();
+    if(!d.ok)return;
+    const keys=d.licensekeys||d.licenseKeys||[];
     document.getElementById("keyTbl").innerHTML=keys.length===0
-      ?`<tr><td colspan="6" style="text-align:center;color:var(--g500);padding:20px">No keys generated yet. Use "+ Generate Key" button above.</td></tr>`
+      ?`<tr><td colspan="6" style="text-align:center;color:var(--g500);padding:20px">No keys generated yet.</td></tr>`
       :keys.slice().reverse().map(k=>`<tr>
           <td><code style="font-size:12px;font-weight:700;color:#0d9488">${k.key}</code></td>
           <td><span class="badge2 ${k.type==="pro"?"bpu":"bgr"}">${(k.type||"basic").toUpperCase()}</span></td>
           <td>${k.months||1} month(s)</td>
           <td>${k.hospitalId||'<span style="color:#94a3b8">Unused</span>'}</td>
           <td>${k.usedAt?k.usedAt.split("T")[0]:'<span style="color:#22c55e">Available</span>'}</td>
-          <td style="font-size:11px;color:#94a3b8">${k.createdAt?k.createdAt.split("T")[0]:'—'}</td>
+          <td style="font-size:11px;color:#94a3b8">${k.createdAt?k.createdAt.split("T")[0]:"—"}</td>
         </tr>`).join("");
-  }catch(e){document.getElementById("keyTbl").innerHTML=`<tr><td colspan="6" style="color:red;padding:16px">Error loading keys.</td></tr>`;}
+  }catch(e){
+    document.getElementById("keyTbl").innerHTML=`<tr><td colspan="6" style="color:red;padding:16px">Error: `+e.message+`</td></tr>`;
+  }
 }
-
+  
 function copyKey(){
   const k=document.getElementById("keyDisplay").textContent;
   navigator.clipboard.writeText(k).then(()=>alert("Key copied: "+k));
