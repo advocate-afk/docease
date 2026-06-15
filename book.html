@@ -497,7 +497,8 @@ function openRazorpay(key,fee,orderId){
     handler:async(resp)=>{
       // Notify backend
       try{
-        const r=await api({action:"verifyPatientPayment",aptId:S.aptId,
+        const aptId=S.aptId||QS.get("aptId");
+        const r=await api({action:"verifyPatientPayment",aptId:aptId,
           orderId:resp.razorpay_order_id||"",payId:resp.razorpay_payment_id});
         S.waLink=r.waLink;
         showVideoConfirmed(fee,r.joinUrl);
