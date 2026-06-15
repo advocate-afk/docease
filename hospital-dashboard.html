@@ -361,9 +361,9 @@ function updateSidebar(){
 }
 
 function updateMetrics(r){
-  const now=new Date();const today=now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0")+"-"+String(now.getDate()).padStart(2,"0");
+  const today=new Date().toISOString().split("T")[0];
   document.getElementById("mDocs").textContent=doctors.length;
-  document.getElementById("mToday").textContent=(r.todayAppointments||[]).length;
+  document.getElementById("mToday").textContent=(r.todayAppointments||[]).filter(a=>a.type==="in-person").length;
   document.getElementById("mVid").textContent=videoReqs.length;
   document.getElementById("mTotal").textContent=appointments.length;
   const vb=document.getElementById("vBadge");
@@ -539,7 +539,7 @@ function renderVideoReqs(){
             <div style="font-weight:600;font-size:12px;margin-bottom:9px">Set date & timeslot for this patient:</div>
             <div class="tsrow">
               <div><label style="font-size:11px;font-weight:600;display:block;margin-bottom:3px">Date</label>
-                <input type="date" id="vd-${v.aptId}" min="${(()=>{const n=new Date();return n.getFullYear()+'-'+String(n.getMonth()+1).padStart(2,'0')+'-'+String(n.getDate()).padStart(2,'0')})()"></div>
+                <input type="date" id="vd-${v.aptId}" min="${new Date().toISOString().split("T")[0]}"></div>
               <div><label style="font-size:11px;font-weight:600;display:block;margin-bottom:3px">Timeslot</label>
                 <select id="vt-${v.aptId}">
                   <option>12:00 AM</option><option>12:30 AM</option>
