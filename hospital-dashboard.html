@@ -361,9 +361,9 @@ function updateSidebar(){
 }
 
 function updateMetrics(r){
-  const today=new Date().toISOString().split("T")[0];
+  const n=new Date();const today=n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0")+"-"+String(n.getDate()).padStart(2,"0");
   document.getElementById("mDocs").textContent=doctors.length;
-  document.getElementById("mToday").textContent=(r.todayAppointments||[]).filter(a=>a.type==="in-person").length;
+  document.getElementById("mToday").textContent=(r.todayAppointments||[]).length;
   document.getElementById("mVid").textContent=videoReqs.length;
   document.getElementById("mTotal").textContent=appointments.length;
   const vb=document.getElementById("vBadge");
