@@ -165,7 +165,7 @@ tr:last-child td{border:none}
   <!-- DOCTORS -->
   <div id="p-doctors" style="display:none">
     <div class="topbar"><h1>Manage Doctors</h1><button class="btn btn-p" onclick="openMo('mAddDoc')">+ Add Doctor</button></div>
-    <div class="al al-i" id="vidDocNote" style="display:none">📹 <strong>Pro Plan:</strong> Toggle video consultation per doctor. Patients pay directly to your hospital via your Razorpay key.</div>
+    <div class="al al-i">💡 <strong>Per-Doctor Billing:</strong> Each doctor can be on Basic (₹499/month) or Pro (₹999/month) plan independently. Pro plan enables video consultation for that doctor.</div>
     <div class="dgrid" id="docGrid"></div>
   </div>
 
@@ -277,7 +277,17 @@ tr:last-child td{border:none}
       <div class="fg"><label>Experience (years)</label><input type="number" id="dExp" placeholder="5"></div>
       <div class="fg"><label>In-Person Visit Fee (₹)</label><input type="number" id="dFee" placeholder="200"></div>
     </div>
-    <div class="fg"><label>Video Consult Fee (₹) <span style="color:var(--g500)">(Pro plan only)</span></label><input type="number" id="dVFee" placeholder="500"></div>
+    <div class="fg"><label>Video Consult Fee (₹)</label><input type="number" id="dVFee" placeholder="500"></div>
+    <div class="fg">
+      <label>Doctor Plan *</label>
+      <select id="dPlan">
+        <option value="basic">Basic — ₹499/month (Appointments only)</option>
+        <option value="pro">Pro — ₹999/month (Appointments + Video Consult)</option>
+      </select>
+    </div>
+    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:9px 12px;font-size:12px;color:#92400e;margin-bottom:12px">
+      💡 Plan can be changed anytime. Pro-rata billing applies for mid-month additions.
+    </div>
     <button class="btn btn-p btn-full" onclick="addDoctor()">Add Doctor</button>
   </div>
 </div>
@@ -415,8 +425,6 @@ function renderApts(){
 
 // ---- DOCTORS ----
 function renderDoctors(){
-  const isPro=session.plan==="pro";
-  document.getElementById("vidDocNote").style.display=isPro?"block":"none";
   if(doctors.length===0){
     document.getElementById("docGrid").innerHTML=`<div class="empty" style="grid-column:span 3"><div class="ei">👨‍⚕️</div>No doctors yet<br><button class="btn btn-p" style="margin-top:12px" onclick="openMo('mAddDoc')">Add First Doctor</button></div>`;
     return;
@@ -428,10 +436,17 @@ function renderDoctors(){
       <div class="ds">${d.specialization}${d.qualification?" · "+d.qualification:""}</div>
       <div class="fees">
         <span style="background:#fef9c3;color:#854d0e">₹${d.visitFee} visit</span>
-        ${isPro&&d.videoEnabled==="true"?`<span style="background:#dbeafe;color:#1e40af">📹 ₹${d.videoFee}</span>`:''}
+        ${d.plan==="pro"&&d.videoEnabled==="true"?`<span style="background:#dbeafe;color:#1e40af">📹 ₹${d.videoFee}</span>`:''}
         <span style="background:${d.active==="true"?"#dcfce7":"#fee2e2"};color:${d.active==="true"?"#166534":"#991b1b"}">${d.active==="true"?"✓ Active":"✗ Off"}</span>
       </div>
-      ${isPro?`<div class="vtog"><span style="font-size:12px;color:var(--g700)">📹 Video</span><button class="tsw ${d.videoEnabled==="true"?"on":""}" onclick="toggleVideo('${d.doctorId}','${d.videoEnabled}')"></button><span style="font-size:11px;color:var(--g500)">${d.videoEnabled==="true"?"ON":"OFF"}</span></div>`:''}
+      <div style="margin-top:9px;padding:8px;background:var(--g50);border-radius:8px;display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:11px;color:var(--g700);font-weight:600">Plan:</span>
+        <div style="display:flex;gap:5px">
+          <button onclick="setDocPlan('${d.doctorId}','basic')" style="padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:none;background:${d.plan!=='pro'?'#0d9488':'#e2e8f0'};color:${d.plan!=='pro'?'#fff':'#64748b'}">Basic ₹499</button>
+          <button onclick="setDocPlan('${d.doctorId}','pro')" style="padding:3px 9px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:none;background:${d.plan==='pro'?'#6366f1':'#e2e8f0'};color:${d.plan==='pro'?'#fff':'#64748b'}">Pro ₹999</button>
+        </div>
+      </div>
+      ${d.plan==="pro"?`<div class="vtog"><span style="font-size:12px;color:var(--g700)">📹 Video</span><button class="tsw ${d.videoEnabled==="true"?"on":""}" onclick="toggleVideo('${d.doctorId}','${d.videoEnabled}')"></button><span style="font-size:11px;color:var(--g500)">${d.videoEnabled==="true"?"ON":"OFF"}</span></div>`:''}
       <div class="acts">
         <button class="abtn at" onclick="openBlock('${d.doctorId}','${d.name}','${d.blockedDates||""}')">📅 Block Dates</button>
         <button class="abtn ${d.active==="true"?"ar":"ag"}" onclick="toggleActive('${d.doctorId}','${d.active}')">${d.active==="true"?"Deactivate":"Activate"}</button>
@@ -447,16 +462,24 @@ async function toggleVideo(id,cur){
 async function toggleActive(id,cur){
   await post({action:"updateDoctor",doctorId:id,active:cur==="true"?"false":"true"});loadAll();
 }
+async function setDocPlan(id,plan){
+  if(plan==="pro"&&!confirm("Switch to Pro (₹999/month)?\nVideo consultation will be enabled."))return;
+  if(plan==="basic"&&!confirm("Switch to Basic (₹499/month)?\nVideo consultation will be disabled."))return;
+  await post({action:"updateDoctor",doctorId:id,plan,videoEnabled:plan==="pro"?"true":"false"});
+  loadAll();
+}
 
 async function addDoctor(){
   const nm=document.getElementById("dName").value.trim();
   const sp=document.getElementById("dSpec").value.trim();
   if(!nm||!sp){alert("Name and specialization required");return;}
+  const docPlan=document.getElementById("dPlan").value||"basic";
   const r=await post({action:"addDoctor",hospitalId:session.hospitalId,
     name:nm,specialization:sp,qualification:document.getElementById("dQual").value,
     experience:document.getElementById("dExp").value||0,
     visitFee:document.getElementById("dFee").value||200,
-    videoFee:document.getElementById("dVFee").value||500});
+    videoFee:document.getElementById("dVFee").value||500,
+    plan:docPlan});
   if(r.ok){closeMo("mAddDoc");loadAll();}else alert("Error: "+r.error);
 }
 
@@ -608,29 +631,48 @@ function selPlan(p){
   updateSubSummary();
 }
 function updateSubSummary(){
-  const active=doctors.filter(d=>d.active==="true").length;
-  const price=selPlanName==="pro"?999:499;
-  const total=price*(active||1);
+  const active=doctors.filter(d=>d.active==="true");
+  const basicDocs=active.filter(d=>d.plan!=="pro");
+  const proDocs=active.filter(d=>d.plan==="pro");
+  const basicAmt=basicDocs.length*499;
+  const proAmt=proDocs.length*999;
+  const total=basicAmt+proAmt;
+  const now=new Date();
+  const daysInMonth=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();
+  const remaining=daysInMonth-now.getDate()+1;
+  const proRata=remaining<daysInMonth;
+  const proRataTotal=Math.round(total*remaining/daysInMonth);
+  window._subTotal=total;
+  window._subProRataTotal=proRataTotal;
+  window._subProRata=proRata;
+  window._subDoctors=active.map(d=>({doctorId:d.doctorId,plan:d.plan||"basic"}));
   document.getElementById("subSummary").innerHTML=`
-    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><span>Active Doctors</span><strong>${active||1}</strong></div>
-    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><span>Rate</span><strong>₹${price}/doctor/month</strong></div>
-    <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;border-top:1px solid var(--g200);padding-top:8px;margin-top:8px"><span>Monthly Total</span><strong style="color:var(--t)">₹${total}</strong></div>`;
+    <div style="font-weight:700;font-size:13px;margin-bottom:10px;color:var(--g700)">Per-Doctor Breakdown:</div>
+    ${basicDocs.length>0?`<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><span>🏥 Basic × ${basicDocs.length} doctor${basicDocs.length>1?"s":""}</span><strong>₹${basicAmt}</strong></div>`:""}
+    ${proDocs.length>0?`<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px"><span>📹 Pro × ${proDocs.length} doctor${proDocs.length>1?"s":""}</span><strong>₹${proAmt}</strong></div>`:""}
+    ${active.length===0?`<div style="font-size:13px;color:var(--g500)">No active doctors.</div>`:""}
+    <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;border-top:1px solid var(--g200);padding-top:8px;margin-top:8px"><span>Full Month Total</span><strong style="color:var(--t)">₹${total}</strong></div>
+    ${proRata?`<div style="margin-top:8px;padding:8px 10px;background:#fffbeb;border-radius:8px;font-size:12px;color:#92400e"><div style="display:flex;justify-content:space-between"><span>⏱ Pro-rata today (${remaining}/${daysInMonth} days)</span><strong>₹${proRataTotal}</strong></div></div>`:""}`;
 }
 
 async function paySubscription(){
-  const active=Math.max(doctors.filter(d=>d.active==="true").length,1);
+  const activeDocs=window._subDoctors||doctors.filter(d=>d.active==="true").map(d=>({doctorId:d.doctorId,plan:d.plan||"basic"}));
+  if(activeDocs.length===0){alert("No active doctors. Please activate doctors first.");return;}
+  const useProRata=window._subProRata||false;
+  const hasPro=activeDocs.some(d=>d.plan==="pro");
   try{
-    const r=await post({action:"createSubOrder",hospitalId:session.hospitalId,plan:selPlanName,doctorCount:active,months:1});
+    const r=await post({action:"createSubOrder",hospitalId:session.hospitalId,
+      doctors:activeDocs,months:1,proRata:useProRata});
     if(!r.ok){alert("Could not create order. Try again.");return;}
     new Razorpay({
       key:r.rzpKey||RK, amount:r.amount*100, currency:"INR",
-      name:"DocEase", description:selPlanName.toUpperCase()+" Plan",
+      name:"DocEase", description:"Subscription — "+activeDocs.length+" Doctor(s)",
       order_id:r.order.id,
       handler:async(resp)=>{
         const v=await post({action:"verifySubPayment",hospitalId:session.hospitalId,
-          plan:selPlanName,doctorCount:active,months:1,amount:r.amount,
+          plan:hasPro?"pro":"basic",doctorCount:activeDocs.length,months:1,amount:r.amount,
           orderId:resp.razorpay_order_id,payId:resp.razorpay_payment_id,signature:resp.razorpay_signature});
-        if(v.ok){alert("✅ Subscription activated! Plan: "+v.plan+" | Expires: "+v.expiry.split("T")[0]);loadAll();}
+        if(v.ok){alert("✅ Subscription activated! Expires: "+v.expiry.split("T")[0]);loadAll();}
         else alert("Payment error: "+v.error);
       },
       theme:{color:"#0d9488"}
@@ -752,5 +794,37 @@ function printApt(a){
   setTimeout(()=>w.print(),400);
 }
 </script>
+<!-- AUTO PAY MODAL -->
+<div class="mo" id="mAutoPay">
+  <div class="mbox" style="max-width:400px">
+    <div style="text-align:center;margin-bottom:18px">
+      <div style="font-size:36px;margin-bottom:8px">✅</div>
+      <div style="font-size:17px;font-weight:800;color:var(--g900)" id="autoPayDocName">Doctor added!</div>
+      <div style="font-size:13px;color:var(--g500);margin-top:4px">Complete payment to activate</div>
+    </div>
+    <div style="background:var(--g50);border-radius:12px;padding:16px;margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px">
+        <span style="color:var(--g500)">New Doctor Plan</span>
+        <strong id="autoPayPlan">BASIC</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px">
+        <span style="color:var(--g500)">Rate</span>
+        <strong id="autoPayPrice">₹499/month</strong>
+      </div>
+      <div style="font-size:12px;color:var(--g500);margin-bottom:8px;padding:8px;background:#fff;border-radius:8px" id="autoPayBreakdown"></div>
+      <div style="font-size:11px;color:var(--g500);margin-bottom:8px" id="autoPayNote"></div>
+      <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:800;border-top:1px solid var(--g200);padding-top:10px">
+        <span>Amount Due</span>
+        <span style="color:var(--t)" id="autoPayTotal">₹499</span>
+      </div>
+    </div>
+    <button class="btn btn-p btn-full" onclick="processAutoPayment()" style="margin-bottom:10px">
+      💳 Pay Now →
+    </button>
+    <button class="btn btn-full" style="border:1px solid var(--g300);background:#fff" onclick="closeMo('mAutoPay')">
+      Pay Later (from Subscription tab)
+    </button>
+  </div>
+</div>
 </body>
 </html>
