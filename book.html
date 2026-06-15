@@ -495,14 +495,23 @@ function openRazorpay(key,fee,orderId){
     key,amount:fee*100,currency:"INR",
     name:"DocEase Video Consult",description:"Online Consultation Fee",
     handler:async(resp)=>{
-      // Notify backend
+      const aptId=S.aptId||QS.get("aptId")||"";
+      const roomId=S.videoRoomId||QS.get("room")||"";
+      const fallbackUrl="https://meet.jit.si/"+roomId;
+      // Always show video confirmed first (payment already done)
+      showVideoConfirmed(fee, fallbackUrl);
+      // Then try to notify backend (non-blocking)
       try{
-        const aptId=S.aptId||QS.get("aptId");
         const r=await api({action:"verifyPatientPayment",aptId:aptId,
           orderId:resp.razorpay_order_id||"",payId:resp.razorpay_payment_id});
-        S.waLink=r.waLink;
-        showVideoConfirmed(fee,r.joinUrl);
-      }catch(e){showVideoConfirmed(fee,"https://meet.jit.si/"+S.videoRoomId);}
+        if(r&&r.ok){
+          if(r.waLink)S.waLink=r.waLink;
+          if(r.joinUrl)showVideoConfirmed(fee,r.joinUrl);
+        }
+      }catch(e){
+        // Backend notify failed but payment done — video link already shown
+        console.log("Backend notify failed:",e.message);
+      }
     },
     theme:{color:"#0d9488"}
   };
