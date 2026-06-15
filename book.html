@@ -478,16 +478,7 @@ function initPaymentFlow(){
 async function doPayment(){
   const fee=window._payFee||500;
   const rzpKey=S.rzpKey||DC.RZP_KEY;
-  // Create order via backend (will use hospital's RZP key to create order)
-  // For patient payments, we call backend to create order using hospital's key
-  try{
-    const r=await api({action:"createPatientOrder",aptId:S.aptId,fee,rzpKeyId:rzpKey});
-    if(!r.ok&&!r.order){
-      // Fallback: use key directly if backend doesn't support it
-      openRazorpay(rzpKey,fee,null);return;
-    }
-    openRazorpay(rzpKey,fee,r.order?.id);
-  }catch(e){openRazorpay(rzpKey,fee,null);}
+  openRazorpay(rzpKey,fee,null);
 }
 
 function openRazorpay(key,fee,orderId){
