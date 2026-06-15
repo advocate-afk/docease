@@ -137,9 +137,19 @@ body{font-family:'Inter',sans-serif;background:var(--g50);color:var(--g900)}
   <div class="grid" id="stGrid"></div>
 </div>
 
+<!-- S2b: DISTRICT (between state and hospital) -->
+<div id="s2b" class="card" style="display:none">
+  <button class="btn-bk" onclick="go(2)">← Back</button>
+  <div class="ctit" style="margin-top:14px">Select District</div>
+  <div class="csub" id="s2bsub"></div>
+  <div class="sb"><span class="si">🔍</span><input type="text" id="distSrch" placeholder="Search district..." oninput="filterDist()"></div>
+  <div class="ldr" id="distLdr"><div class="sp"></div>Loading districts...</div>
+  <div class="grid" id="distGrid"></div>
+</div>
+
 <!-- S3: HOSPITAL -->
 <div id="s3" class="card" style="display:none">
-  <button class="btn-bk" onclick="go(2)">← Back</button>
+  <button class="btn-bk" onclick="goToDistrict()">← Back</button>
   <div class="ctit" style="margin-top:14px">Select Hospital</div>
   <div class="csub" id="s3sub"></div>
   <div class="sb"><span class="si">🔍</span><input type="text" id="hSrch" placeholder="Search hospital..." oninput="filterH()"></div>
@@ -256,19 +266,22 @@ function renderProg(){
 
 // ---- NAVIGATION ----
 function go(n){
-  hide("s"+S.step);
+  // Hide current step (handle s2b district step)
+  if(S.step==="2b") hide("s2b"); else hide("s"+S.step);
   if(S.type==="video"&&n===5) n=6;
   S.step=n;
   const el=document.getElementById("s"+n);
   if(el){el.style.display="block";window.scrollTo(0,0);}
   renderProg();
   if(n===2) loadStates();
+  if(n==="2b") loadDistricts();
   if(n===3) loadHospitals();
   if(n===4) loadDoctors();
   if(n===5) initCal();
 }
 function hide(id){const e=document.getElementById(id);if(e)e.style.display="none";}
 function bk6(){ hide("s6"); S.step=S.type==="video"?4:5; document.getElementById("s"+(S.type==="video"?4:5)).style.display="block"; renderProg(); }
+function goToDistrict(){ hide("s3"); S.step="2b"; document.getElementById("s2b").style.display="block"; renderProg(); window.scrollTo(0,0); }
 
 // ---- S1 TYPE ----
 function pickType(t,el){
@@ -297,14 +310,40 @@ function renderSt(list){
     </div>`).join("");
 }
 function filterSt(){const q=document.getElementById("stSrch").value.toLowerCase();renderSt(allSt.filter(s=>s.toLowerCase().includes(q)));}
-function pickSt(s){S.state=s;renderSt(allSt);setTimeout(()=>go(3),180);}
+function pickSt(s){S.state=s;renderSt(allSt);setTimeout(()=>go("2b"),180);}
+
+// ---- S2b DISTRICTS ----
+let allDist=[];
+async function loadDistricts(){
+  document.getElementById("s2bsub").textContent="Districts in "+S.state;
+  const l=document.getElementById("distLdr");l.style.display="block";document.getElementById("distGrid").innerHTML="";
+  try{
+    const r=await api({action:"getDistricts",state:S.state});
+    allDist=r.districts||[];l.style.display="none";
+    if(!allDist.length){
+      // No districts — go directly to hospitals (state-level)
+      S.district=null;go(3);return;
+    }
+    renderDist(allDist);
+  }catch(e){l.innerHTML="⚠️ Could not load districts.";}
+}
+function renderDist(list){
+  document.getElementById("distGrid").innerHTML=list.map(d=>`
+    <div class="gc ${S.district===d?"sel":""}" onclick="pickDist('${d}')">
+      <div class="ge">🏙️</div>
+      <div class="gn">${d}</div>
+    </div>`).join("");
+}
+function filterDist(){const q=document.getElementById("distSrch").value.toLowerCase();renderDist(allDist.filter(d=>d.toLowerCase().includes(q)));}
+function pickDist(d){S.district=d;renderDist(allDist);setTimeout(()=>go(3),180);}
 
 // ---- S3 HOSPITALS ----
 async function loadHospitals(){
-  document.getElementById("s3sub").textContent="Hospitals in "+S.state;
+  const loc=S.district?S.district+", "+S.state:S.state;
+  document.getElementById("s3sub").textContent="Hospitals in "+loc;
   const l=document.getElementById("hLdr");l.style.display="block";document.getElementById("hList").innerHTML="";
   try{
-    const r=await api({action:"getHospitals",state:S.state});
+    const r=await api({action:"getHospitals",state:S.state,...(S.district?{district:S.district}:{})});
     allH=r.hospitals||[];l.style.display="none";renderH(allH);
   }catch(e){l.innerHTML="⚠️ Could not load hospitals.";}
 }
