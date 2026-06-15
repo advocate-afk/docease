@@ -131,7 +131,7 @@ tr:last-child td{border:none}
     <div id="t-keys" style="display:none">
       <div class="sec">
         <div class="sec-h"><h2>License Keys</h2><button class="btn btn-p" onclick="openMo('mGenKey')">+ Generate Key</button></div>
-        <table><thead><tr><th>Key</th><th>Type</th><th>Months</th><th>Hospital</th><th>Used At</th><th>Created</th></tr></thead>
+        <table><thead><tr><th>Key</th><th>Plan</th><th>Discount</th><th>Months</th><th>Hospital</th><th>Status</th><th>Created</th></tr></thead>
         <tbody id="keyTbl"></tbody></table>
       </div>
     </div>
@@ -157,8 +157,38 @@ tr:last-child td{border:none}
   <div class="mbox">
     <button class="mc2" onclick="closeMo('mGenKey')">×</button>
     <h2>Generate License Key</h2>
-    <div class="fg"><label>Plan Type</label><select id="kType"><option value="basic">Basic Plan</option><option value="pro">Pro Plan</option></select></div>
-    <div class="fg"><label>Duration (months)</label><select id="kMonths"><option value="1">1 Month</option><option value="3">3 Months</option><option value="6">6 Months</option><option value="12">12 Months (1 Year)</option></select></div>
+    <div class="fg">
+      <label>Plan Type</label>
+      <select id="kType">
+        <option value="any">Any Plan (Basic or Pro)</option>
+        <option value="basic">Basic Plan Only</option>
+        <option value="pro">Pro Plan Only</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>Discount Type</label>
+      <select id="kDiscType" onchange="toggleDiscField()">
+        <option value="100">100% Free (Full Access)</option>
+        <option value="custom">Custom Discount %</option>
+      </select>
+    </div>
+    <div class="fg" id="discField" style="display:none">
+      <label>Discount Percentage</label>
+      <div style="display:flex;align-items:center;gap:8px">
+        <input type="number" id="kDisc" placeholder="e.g. 20 or 50" min="1" max="99" style="flex:1">
+        <span style="font-size:14px;font-weight:700;color:var(--g500)">%</span>
+      </div>
+      <div style="font-size:11px;color:var(--g500);margin-top:3px">20 = 20% off, 50 = half price</div>
+    </div>
+    <div class="fg">
+      <label>Duration (months)</label>
+      <select id="kMonths">
+        <option value="1">1 Month</option>
+        <option value="3">3 Months</option>
+        <option value="6">6 Months</option>
+        <option value="12">12 Months (1 Year)</option>
+      </select>
+    </div>
     <button class="btn btn-p" style="width:100%;margin-bottom:12px" onclick="genKey()">Generate Key</button>
     <div id="keyResult" style="display:none">
       <div style="font-size:12px;color:var(--g500);margin-bottom:6px;text-align:center">Key generated successfully!</div>
@@ -300,13 +330,26 @@ async function addHospital(){
   else alert("Error: "+r.error);
 }
 
+function toggleDiscField(){
+  const v=document.getElementById("kDiscType").value;
+  document.getElementById("discField").style.display=v==="custom"?"block":"none";
+}
 async function genKey(){
+  const discType=document.getElementById("kDiscType").value;
+  let discount=100;
+  if(discType==="custom"){
+    discount=Number(document.getElementById("kDisc").value);
+    if(!discount||discount<1||discount>99){alert("Enter discount between 1 and 99");return;}
+  }
   const r=await post({action:"generateKey",passcode:PASS,
     type:document.getElementById("kType").value,
+    discount,
     months:Number(document.getElementById("kMonths").value)});
   if(r.ok){
     document.getElementById("keyResult").style.display="block";
     document.getElementById("keyDisplay").textContent=r.key;
+    const desc=discount===100?"100% FREE":discount+"% discount";
+    document.querySelector("#keyResult div").textContent="Key generated! "+desc+" · "+document.getElementById("kMonths").value+" month(s)";
   }
 }
 
@@ -321,10 +364,11 @@ async function loadKeys(){
       ?`<tr><td colspan="6" style="text-align:center;color:var(--g500);padding:20px">No keys generated yet.</td></tr>`
       :keys.slice().reverse().map(k=>`<tr>
           <td><code style="font-size:12px;font-weight:700;color:#0d9488">${k.key}</code></td>
-          <td><span class="badge2 ${k.type==="pro"?"bpu":"bgr"}">${(k.type||"basic").toUpperCase()}</span></td>
-          <td>${k.months||1} month(s)</td>
-          <td>${k.hospitalId||'<span style="color:#94a3b8">Unused</span>'}</td>
-          <td>${k.usedAt?k.usedAt.split("T")[0]:'<span style="color:#22c55e">Available</span>'}</td>
+          <td><span class="badge2 ${k.type==="pro"?"bpu":k.type==="any"?"bb":"bgr"}">${(k.type||"any").toUpperCase()}</span></td>
+          <td><span style="font-weight:700;color:${Number(k.discount||100)===100?"#166534":Number(k.discount||100)>=50?"#854d0e":"#1e40af"}">${Number(k.discount||100)===100?"🆓 FREE":k.discount+"% OFF"}</span></td>
+          <td>${k.months||1} mo</td>
+          <td style="font-size:11px">${k.hospitalId||'<span style="color:#94a3b8">—</span>'}</td>
+          <td>${k.usedAt?k.usedAt.split("T")[0]:'<span style="color:#22c55e;font-weight:600">✓ Available</span>'}</td>
           <td style="font-size:11px;color:#94a3b8">${k.createdAt?k.createdAt.split("T")[0]:"—"}</td>
         </tr>`).join("");
   }catch(e){
