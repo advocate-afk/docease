@@ -896,7 +896,7 @@ function printApt(a){
           `<div class="fee-row"><span>Payment Status</span><span style="color:green;font-weight:700">✅ PAID</span></div>
            <div class="fee-row"><span>Amount Paid</span><span style="color:#0d9488">₹${a.videoFee||a.fee||"—"}</span></div>`
           :`<div class="fee-row"><span>Payment Mode</span><span>At Reception</span></div>
-            <div class="fee-row"><span>Consultation Fee</span><span>₹${a.visitFee||"—"}</span></div>`}
+            <div class="fee-row"><span>Consultation Fee</span><span>${a.visitFee?"₹"+a.visitFee:"Payable at desk"}</span></div>`}
         <div class="fee-row"><span>Total</span><span>${a.type==="video"&&a.payStatus==="paid"?"₹"+(a.videoFee||a.fee||"—"):"Payable at desk"}</span></div>
       </div>
     </div>
