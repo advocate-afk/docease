@@ -826,69 +826,92 @@ window.onload=init;
 // ---- PRINT APPOINTMENT ----
 function printApt(a){
   const hosp=session||{};
-  const w=window.open('','_blank','width=794,height=1123');
-  w.document.write(`<!DOCTYPE html><html><head><title>Appointment — ${a.token||''}</title>
+  const now=new Date();
+  const invNo="INV-"+now.getFullYear().toString().slice(-2)+String(now.getMonth()+1).padStart(2,"0")+String(now.getDate()).padStart(2,"0")+"-"+(a.token||a.aptId.slice(-4)).replace("T-","");
+  const w=window.open('',"_blank","width=794,height=600");
+  w.document.write(`<!DOCTYPE html><html><head><title>Receipt — ${invNo}</title>
   <style>
-    @page{size:A4;margin:20mm}
+    @page{size:A4;margin:0}
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Arial',sans-serif;font-size:13px;color:#111;padding:20px}
-    .top{text-align:center;border-bottom:3px solid #0d9488;padding-bottom:16px;margin-bottom:20px}
-    .top h1{font-size:22px;font-weight:900;color:#0d9488;letter-spacing:1px}
-    .top .hsub{font-size:13px;color:#555;margin-top:4px}
-    .token-box{text-align:center;margin:16px 0;padding:14px;background:#f0fdf4;border:2px solid #0d9488;border-radius:10px}
-    .token-box .tl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#0d9488}
-    .token-box .tv{font-size:52px;font-weight:900;color:#0d9488;line-height:1}
-    .body-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:16px 0}
-    .section-box{border:1px solid #ddd;border-radius:8px;padding:14px}
-    .section-box h3{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#0d9488;margin-bottom:10px;border-bottom:1px solid #eee;padding-bottom:6px}
-    .row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f5f5f5;font-size:12px}
+    body{font-family:'Arial',sans-serif;font-size:12px;color:#111;background:#fff}
+    .page{width:210mm;min-height:148mm;max-height:148mm;padding:10mm 12mm;position:relative;border-bottom:2px dashed #ccc}
+    .hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;padding-bottom:8px;border-bottom:3px solid #0d9488}
+    .hdr-left .hname{font-size:18px;font-weight:900;color:#0d9488;letter-spacing:.5px}
+    .hdr-left .haddr{font-size:10px;color:#555;margin-top:2px}
+    .hdr-right{text-align:right}
+    .inv-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#0d9488}
+    .inv-no{font-size:15px;font-weight:900;color:#111;margin-top:2px}
+    .inv-date{font-size:10px;color:#555;margin-top:2px}
+    .tok-strip{background:#0d9488;color:#fff;padding:6px 12px;border-radius:6px;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+    .tok-strip .tl{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;opacity:.85}
+    .tok-strip .tv{font-size:22px;font-weight:900;letter-spacing:1px}
+    .body-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+    .box{border:1px solid #ddd;border-radius:6px;padding:8px}
+    .box-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#0d9488;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #eee}
+    .row{display:flex;justify-content:space-between;padding:3px 0;font-size:11px;border-bottom:1px solid #f5f5f5}
     .row:last-child{border:none}
-    .row .lbl{color:#666}.row .val{font-weight:700;text-align:right;max-width:60%}
-    .footer-box{border:1px solid #ddd;border-radius:8px;padding:14px;margin-top:16px;text-align:center;background:#f8fafc}
-    .footer-box .fn{font-size:16px;font-weight:800;color:#0d9488}
-    .footer-box .fa{font-size:12px;color:#555;margin-top:3px}
-    .footer-box .fp{font-size:12px;color:#555}
-    .notice{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;margin-top:14px;font-size:12px;color:#92400e;text-align:center}
-    .ref{text-align:center;margin-top:10px;font-size:10px;color:#aaa}
+    .lbl{color:#666}.val{font-weight:700;text-align:right;max-width:60%}
+    .fee-box{border:2px solid #0d9488;border-radius:6px;padding:8px;margin-bottom:8px}
+    .fee-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#0d9488;margin-bottom:6px}
+    .fee-row{display:flex;justify-content:space-between;font-size:11px;padding:3px 0;border-bottom:1px solid #f0fdf4}
+    .fee-row:last-child{border:none;font-size:13px;font-weight:900;color:#0d9488;padding-top:5px;margin-top:3px;border-top:2px solid #0d9488}
+    .complaint{border:1px solid #ddd;border-radius:6px;padding:7px;margin-bottom:8px;font-size:11px}
+    .complaint .ct{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#0d9488;margin-bottom:3px}
+    .footer{display:flex;justify-content:space-between;align-items:flex-end;padding-top:6px;border-top:1px solid #eee}
+    .footer .note{font-size:9px;color:#888;max-width:60%}
+    .footer .sig{text-align:right;font-size:9px;color:#888}
+    .footer .sig .sline{border-top:1px solid #999;margin-bottom:2px;width:100px;margin-left:auto}
+    .stamp{border:2px solid #0d9488;border-radius:50%;width:60px;height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:#0d9488;text-align:center;line-height:1.3;position:absolute;bottom:12mm;right:12mm}
+    @media print{body{margin:0}button{display:none}}
   </style></head><body>
-  <div class="top">
-    <h1>${hosp.name||'Hospital'}</h1>
-    <div class="hsub">${hosp.address||''} ${hosp.phone?'· '+hosp.phone:''}</div>
-  </div>
-  <div class="token-box">
-    <div class="tl">Token Number</div>
-    <div class="tv">${a.token||'—'}</div>
-  </div>
-  <div class="body-grid">
-    <div class="section-box">
-      <h3>Doctor Details</h3>
-      <div class="row"><span class="lbl">Doctor</span><span class="val">Dr. ${a.doctorName||'—'}</span></div>
-      <div class="row"><span class="lbl">Date</span><span class="val">${a.date||'—'}</span></div>
-      <div class="row"><span class="lbl">Type</span><span class="val">${a.type==='video'?'Video Consult':'In-Person Visit'}</span></div>
+  <div class="page">
+    <div class="hdr">
+      <div class="hdr-left">
+        <div class="hname">${hosp.name||"Hospital"}</div>
+        <div class="haddr">${hosp.address||""} ${hosp.phone?"· 📞 "+hosp.phone:""}</div>
+      </div>
+      <div class="hdr-right">
+        <div class="inv-label">${a.type==="video"?"Payment Receipt":"OPD Receipt"}</div>
+        <div class="inv-no">${invNo}</div>
+        <div class="inv-date">Date: ${a.date||now.toLocaleDateString("en-IN")}</div>
+      </div>
     </div>
-    <div class="section-box">
-      <h3>Patient Details</h3>
-      <div class="row"><span class="lbl">Name</span><span class="val">${a.patientName||'—'}</span></div>
-      <div class="row"><span class="lbl">Relation</span><span class="val">${a.relationType||''} ${a.relation||'—'}</span></div>
-      <div class="row"><span class="lbl">Age / Gender</span><span class="val">${a.age||'—'} yrs / ${a.gender||'—'}</span></div>
-      <div class="row"><span class="lbl">Mobile</span><span class="val">${a.mobile||'—'}</span></div>
-      ${a.aadhaar?`<div class="row"><span class="lbl">Aadhaar (Last 4)</span><span class="val">XXXX-XXXX-${a.aadhaar}</span></div>`:''}
+    <div class="tok-strip">
+      <div><div class="tl">${a.type==="video"?"Video Consult":"Token Number"}</div><div class="tv">${a.type==="video"?"VID-"+a.aptId.slice(-5).toUpperCase():(a.token||"—")}</div></div>
+      <div style="text-align:right;font-size:10px;opacity:.9">Dr. ${a.doctorName||"—"}<br>${a.type==="video"?"📹 Video Consultation":"🏥 In-Person Visit"}</div>
     </div>
+    <div class="body-grid">
+      <div class="box">
+        <div class="box-title">Patient Details</div>
+        <div class="row"><span class="lbl">Name</span><span class="val">${a.patientName||"—"}</span></div>
+        <div class="row"><span class="lbl">Relation</span><span class="val">${a.relationType||""} ${a.relation||"—"}</span></div>
+        <div class="row"><span class="lbl">Age / Gender</span><span class="val">${a.age||"—"} yrs / ${a.gender||"—"}</span></div>
+        <div class="row"><span class="lbl">Mobile</span><span class="val">${a.mobile||"—"}</span></div>
+        ${a.aadhaar?`<div class="row"><span class="lbl">Aadhaar</span><span class="val">XXXX-XXXX-${a.aadhaar}</span></div>`:""}
+      </div>
+      <div class="fee-box">
+        <div class="fee-title">Fee Details</div>
+        <div class="fee-row"><span>Consultation Type</span><span>${a.type==="video"?"Video Consult":"OPD Visit"}</span></div>
+        ${a.type==="video"&&a.payStatus==="paid"?
+          `<div class="fee-row"><span>Payment Status</span><span style="color:green;font-weight:700">✅ PAID</span></div>
+           <div class="fee-row"><span>Amount Paid</span><span style="color:#0d9488">₹${a.videoFee||a.fee||"—"}</span></div>`
+          :`<div class="fee-row"><span>Payment Mode</span><span>At Reception</span></div>
+            <div class="fee-row"><span>Consultation Fee</span><span>₹${a.visitFee||"—"}</span></div>`}
+        <div class="fee-row"><span>Total</span><span>${a.type==="video"&&a.payStatus==="paid"?"₹"+(a.videoFee||a.fee||"—"):"Payable at desk"}</span></div>
+      </div>
+    </div>
+    <div class="complaint">
+      <div class="ct">Chief Complaint / Symptoms</div>
+      ${a.complaint||"—"}
+    </div>
+    <div class="footer">
+      <div class="note">Ref: ${a.aptId||"—"}<br>Printed: ${now.toLocaleString("en-IN")}<br>This is a computer generated receipt.</div>
+      <div class="sig"><div class="sline"></div>Authorized Signatory</div>
+    </div>
+    <div class="stamp">${a.type==="video"&&a.payStatus==="paid"?"PAID":"OPD"}<br>RECEIPT</div>
   </div>
-  <div class="section-box" style="margin-top:0">
-    <h3>Chief Complaint</h3>
-    <div style="padding:6px 0;font-size:13px">${a.complaint||'—'}</div>
-  </div>
-  <div class="notice">💰 Consultation fee payable at hospital reception · Please arrive 15 minutes early</div>
-  <div class="footer-box" style="margin-top:16px">
-    <div class="fn">${hosp.name||'Hospital'}</div>
-    <div class="fa">${hosp.address||''}</div>
-    <div class="fp">${hosp.phone?'📞 '+hosp.phone:''}</div>
-  </div>
-  <div class="ref">Ref: ${a.aptId||'—'} · Printed on ${new Date().toLocaleString('en-IN')}</div>
   </body></html>`);
-  w.document.close();
-  w.focus();
+  w.document.close();w.focus();
   setTimeout(()=>w.print(),400);
 }
 </script>
