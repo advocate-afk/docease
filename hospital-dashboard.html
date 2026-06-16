@@ -419,8 +419,8 @@ function renderApts(){
       <td>${a.type==="video"?'<span class="badge bpu">📹 Video</span>':'<span class="badge bgr">🏥</span>'}</td>
       <td>${a.payStatus==="paid"?'<span class="badge bg">Paid</span>':a.payStatus==="na"?'<span class="badge bgr">N/A</span>':'<span class="badge by">Pending</span>'}</td>
       <td>${sBadge(a.status)}</td>
-      <td><button class="abtn ab" onclick="printApt(${JSON.stringify(a).replace(/"/g,'&quot;')})">🖨️ Print</button></td>
-    </tr>`).join("");
+      <td style="display:flex;gap:4px;flex-wrap:wrap"><button class="abtn ab" onclick="printApt(${JSON.stringify(a).replace(/"/g,'&quot;')})">🖨️ Print</button>${a.type==="video"&&a.payStatus==="paid"?`<a href="https://meet.jit.si/${a.videoRoomId}" target="_blank" class="abtn ag" style="text-decoration:none">🎥 Join</a>`:""}</td>
+      </tr>`).join("");
 }
 
 // ---- DOCTORS ----
