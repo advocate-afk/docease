@@ -129,7 +129,6 @@ tr:last-child td{border:none}
     <div class="ni" onclick="panel('doctors',this)"><span class="ic">👨‍⚕️</span>Doctors</div>
     <div class="ni" onclick="panel('appointments',this)"><span class="ic">📅</span>Appointments</div>
     <div class="ni" id="navVideo" onclick="panel('video',this)"><span class="ic">📹</span>Video Requests<span class="nb" id="vBadge" style="display:none">0</span></div>
-    <div class="ni" onclick="panel('walkin',this)"><span class="ic">🚶</span>Walk-in Booking</div>
     <div class="ni" onclick="panel('qr',this)"><span class="ic">📱</span>QR Code</div>
     <div class="ni" onclick="panel('subscription',this)"><span class="ic">💳</span>Subscription</div>
     <div class="ni" onclick="panel('settings',this)"><span class="ic">⚙️</span>Settings</div>
@@ -185,41 +184,6 @@ tr:last-child td{border:none}
     <div class="topbar"><h1>Video Consult Requests</h1></div>
     <div class="al al-i">Review requests below. Approve with date + timeslot → System sends WhatsApp payment link to patient automatically.</div>
     <div id="vidList"></div>
-  </div>
-
-  <!-- WALK-IN BOOKING -->
-  <div id="p-walkin" style="display:none">
-    <div class="topbar"><h1>Walk-in Booking</h1><div style="font-size:13px;color:var(--g500)">Book appointment for patients visiting directly at reception</div></div>
-    <div class="sec" style="padding:20px;max-width:600px">
-      <div class="fg"><label>Select Doctor *</label>
-        <select id="wiDoc" style="padding:9px 12px;border:1px solid var(--g300);border-radius:8px;font-family:inherit;font-size:13px;width:100%">
-          <option value="">-- Select Doctor --</option>
-        </select>
-      </div>
-      <div class="fg"><label>Patient Full Name *</label><input id="wiName" placeholder="As per Aadhaar"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:13px">
-        <div class="fg" style="margin:0"><label>Age *</label><input type="number" id="wiAge" placeholder="Years" min="1" max="120"></div>
-        <div class="fg" style="margin:0"><label>Gender *</label>
-          <select id="wiGen"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select>
-        </div>
-      </div>
-      <div class="fg"><label>Mobile *</label><input type="tel" id="wiMob" placeholder="10-digit number" maxlength="10"></div>
-      <div class="fg"><label>Relation</label>
-        <div style="display:flex;gap:8px">
-          <select id="wiRelT" style="width:110px;padding:9px 12px;border:1px solid var(--g300);border-radius:8px;font-family:inherit;font-size:13px">
-            <option>S/O</option><option>D/O</option><option>W/O</option><option>C/O</option>
-          </select>
-          <input id="wiRel" placeholder="Father / Spouse name" style="flex:1;padding:9px 12px;border:1px solid var(--g300);border-radius:8px;font-family:inherit;font-size:13px">
-        </div>
-      </div>
-      <div class="fg"><label>Chief Complaint *</label>
-        <textarea id="wiComp" rows="3" placeholder="Symptoms or reason for visit..." style="padding:9px 12px;border:1px solid var(--g300);border-radius:8px;font-family:inherit;font-size:13px;resize:vertical;width:100%"></textarea>
-      </div>
-      <div class="fg"><label>Appointment Date *</label>
-        <input type="date" id="wiDate" style="padding:9px 12px;border:1px solid var(--g300);border-radius:8px;font-family:inherit;font-size:13px;width:100%">
-      </div>
-      <button class="btn btn-p btn-full" onclick="bookWalkin()">📋 Book & Print Receipt</button>
-    </div>
   </div>
 
   <!-- QR -->
@@ -397,9 +361,9 @@ function updateSidebar(){
 }
 
 function updateMetrics(r){
-  const today=new Date().toISOString().split("T")[0];
+  const n=new Date();const today=n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0")+"-"+String(n.getDate()).padStart(2,"0");
   document.getElementById("mDocs").textContent=doctors.length;
-  document.getElementById("mToday").textContent=(r.todayAppointments||[]).filter(a=>a.type==="in-person").length;
+  document.getElementById("mToday").textContent=(r.todayAppointments||[]).length;
   document.getElementById("mVid").textContent=videoReqs.length;
   document.getElementById("mTotal").textContent=appointments.length;
   const vb=document.getElementById("vBadge");
@@ -455,8 +419,8 @@ function renderApts(){
       <td>${a.type==="video"?'<span class="badge bpu">📹 Video</span>':'<span class="badge bgr">🏥</span>'}</td>
       <td>${a.payStatus==="paid"?'<span class="badge bg">Paid</span>':a.payStatus==="na"?'<span class="badge bgr">N/A</span>':'<span class="badge by">Pending</span>'}</td>
       <td>${sBadge(a.status)}</td>
-      <td><button class="abtn ab" onclick="printApt(${JSON.stringify(a).replace(/"/g,'&quot;')})">🖨️ Print</button></td>
-    </tr>`).join("");
+      <td style="display:flex;gap:4px;flex-wrap:wrap"><button class="abtn ab" onclick="printApt(${JSON.stringify(a).replace(/"/g,'&quot;')})">🖨️ Print</button>${a.type==="video"&&a.payStatus==="paid"?`<a href="https://meet.jit.si/${a.videoRoomId}" target="_blank" class="abtn ag" style="text-decoration:none">🎥 Join</a>`:""}</td>
+      </tr>`).join("");
 }
 
 // ---- DOCTORS ----
@@ -750,7 +714,6 @@ function panel(name,el){
   document.querySelectorAll(".ni").forEach(n=>n.classList.remove("on"));
   if(el)el.classList.add("on");
   if(name==="qr")renderQR();
-  if(name==="walkin")loadWalkinDoctors();
   if(name==="settings")loadSettings();
   if(name==="subscription"){updateSubSummary();document.getElementById("rzpSetupCard").style.display=session.plan==="pro"?"block":"none";if(session.razorpayKeyId)document.getElementById("rzpKeyInput").value=session.razorpayKeyId;}
 }
@@ -759,65 +722,6 @@ function panel(name,el){
 function openMo(id){document.getElementById(id).classList.add("show");}
 function closeMo(id){document.getElementById(id).classList.remove("show");}
 async function post(body){const r=await fetch(B,{method:"POST",body:JSON.stringify(body)});return r.json();}
-
-// ---- WALK-IN BOOKING ----
-function loadWalkinDoctors(){
-  const sel=document.getElementById("wiDoc");
-  if(!sel)return;
-  sel.innerHTML='<option value="">-- Select Doctor --</option>';
-  doctors.filter(d=>d.active==="true").forEach(d=>{
-    const o=document.createElement("option");
-    o.value=JSON.stringify({id:d.doctorId,name:d.name,fee:d.visitFee||200});
-    o.textContent="Dr. "+d.name+" — "+d.specialization+" (₹"+d.visitFee+")";
-    sel.appendChild(o);
-  });
-  const n=new Date();
-  document.getElementById("wiDate").value=n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0")+"-"+String(n.getDate()).padStart(2,"0");
-}
-
-async function bookWalkin(){
-  const docVal=document.getElementById("wiDoc").value;
-  const name=document.getElementById("wiName").value.trim();
-  const age=document.getElementById("wiAge").value;
-  const gen=document.getElementById("wiGen").value;
-  const mob=document.getElementById("wiMob").value.trim();
-  const comp=document.getElementById("wiComp").value.trim();
-  const date=document.getElementById("wiDate").value;
-  if(!docVal||!name||!age||!gen||!mob||!comp||!date){alert("Please fill all required fields (*)");return;}
-  if(mob.length!==10){alert("Enter valid 10-digit mobile number");return;}
-  const doc=JSON.parse(docVal);
-  const btn=document.querySelector("#p-walkin .btn-p");
-  btn.disabled=true;btn.textContent="Booking...";
-  try{
-    const r=await post({action:"bookAppointment",
-      hospitalId:session.hospitalId,hospitalName:session.name,
-      doctorId:doc.id,doctorName:doc.name,
-      patientName:name,
-      relation:document.getElementById("wiRel").value,
-      relationType:document.getElementById("wiRelT").value,
-      aadhaar:"",age,gender:gen,mobile:mob,
-      address:"",complaint:comp,date
-    });
-    btn.disabled=false;btn.textContent="📋 Book & Print Receipt";
-    if(!r.ok){alert("Error: "+r.error);return;}
-    printApt({
-      aptId:r.aptId,token:r.token,type:"in-person",
-      doctorName:doc.name,date,
-      patientName:name,mobile:mob,
-      relationType:document.getElementById("wiRelT").value,
-      relation:document.getElementById("wiRel").value,
-      age,gender:gen,complaint:comp,
-      aadhaar:"",payStatus:"na"
-    });
-    ["wiName","wiAge","wiMob","wiRel","wiComp"].forEach(id=>document.getElementById(id).value="");
-    document.getElementById("wiDoc").value="";
-    document.getElementById("wiGen").value="";
-    loadAll();
-  }catch(e){
-    btn.disabled=false;btn.textContent="📋 Book & Print Receipt";
-    alert("Network error. Try again.");
-  }
-}
 
 window.onload=init;
 
@@ -854,9 +758,8 @@ function printApt(a){
     <div class="hsub">${hosp.address||''} ${hosp.phone?'· '+hosp.phone:''}</div>
   </div>
   <div class="token-box">
-    <div class="tl">${a.type==='video'?'Video Consult Receipt':'Token Number'}</div>
-    <div class="tv" style="${a.type==='video'?'font-size:30px':'font-size:52px'}">${a.type==='video'?('VID-'+(a.aptId||'').slice(-5).toUpperCase()):(a.token||'—')}</div>
-    ${a.type==='video'?'<div style="font-size:12px;color:#0d9488;margin-top:6px">📹 Online Video Consultation</div>':''}
+    <div class="tl">Token Number</div>
+    <div class="tv">${a.token||'—'}</div>
   </div>
   <div class="body-grid">
     <div class="section-box">
@@ -878,14 +781,7 @@ function printApt(a){
     <h3>Chief Complaint</h3>
     <div style="padding:6px 0;font-size:13px">${a.complaint||'—'}</div>
   </div>
-  ${a.type==='video'&&a.payStatus==='paid'?`
-  <div style="background:#f0fdf4;border:2px solid #0d9488;border-radius:8px;padding:14px;margin-top:14px">
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#0d9488;margin-bottom:10px">Payment Receipt</div>
-    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px"><span style="color:#666">Payment Status</span><span style="font-weight:700;color:#166534">✅ PAID</span></div>
-    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px"><span style="color:#666">Consultation Type</span><span style="font-weight:700">Video Consultation</span></div>
-    <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px"><span style="color:#666">Scheduled Time</span><span style="font-weight:700">${a.date} ${a.videoSlot||''}</span></div>
-    <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:800;border-top:1px solid #bbf7d0;padding-top:8px;margin-top:8px"><span>Amount Paid</span><span style="color:#0d9488">₹${a.videoFee||a.fee||'—'}</span></div>
-  </div>`:'<div class="notice">💰 Consultation fee payable at hospital reception · Please arrive 15 minutes early</div>'}
+  <div class="notice">💰 Consultation fee payable at hospital reception · Please arrive 15 minutes early</div>
   <div class="footer-box" style="margin-top:16px">
     <div class="fn">${hosp.name||'Hospital'}</div>
     <div class="fa">${hosp.address||''}</div>
