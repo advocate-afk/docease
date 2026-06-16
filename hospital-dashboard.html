@@ -873,7 +873,7 @@ function printApt(a){
       <div class="hdr-right">
         <div class="inv-label">${a.type==="video"?"Payment Receipt":"OPD Receipt"}</div>
         <div class="inv-no">${invNo}</div>
-        <div class="inv-date">Date: ${a.date||now.toLocaleDateString("en-IN")}</div>
+        <div class="inv-date">Date: ${a.date?new Date(a.date).toDateString():now.toLocaleDateString("en-IN")}</div>
       </div>
     </div>
     <div class="tok-strip">
