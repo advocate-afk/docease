@@ -455,7 +455,7 @@ function renderApts(){
       <td>${a.token?`<span class="badge bb">${a.token}</span>`:'—'}</td>
       <td><div style="font-weight:600;font-size:13px">${a.patientName}</div><div style="font-size:11px;color:var(--g500)">${a.mobile}</div></td>
       <td>Dr. ${a.doctorName}</td>
-      <td>${a.date||'—'}</td>
+      <td>${a.date?new Date(a.date).toDateString():'—'}</td>
       <td>${a.type==="video"?'<span class="badge bpu">📹 Video</span>':'<span class="badge bgr">🏥</span>'}</td>
       <td>${a.payStatus==="paid"?'<span class="badge bg">Paid</span>':a.payStatus==="na"?'<span class="badge bgr">N/A</span>':'<span class="badge by">Pending</span>'}</td>
       <td>${sBadge(a.status)}</td>
@@ -613,7 +613,7 @@ function renderVideoReqs(){
             </div>
           </div>`
         :v.status==="approved"?`
-          <div style="margin-top:8px;font-size:12px;color:var(--g500)">📅 ${v.date} · ⏰ ${v.videoSlot} · 💳 ${v.payStatus==="paid"?'<span style="color:green;font-weight:600">Paid</span>':'Awaiting Payment'}</div>
+          <div style="margin-top:8px;font-size:12px;color:var(--g500)">📅 ${v.date?new Date(v.date).toDateString():''} · ⏰ ${v.videoSlot?new Date(v.videoSlot).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}):''} · 💳 ${v.payStatus==="paid"?'<span style="color:green;font-weight:600">Paid</span>':'Awaiting Payment'}</div>
           ${v.payStatus==="paid"?`<div style="margin-top:7px"><a href="https://meet.jit.si/${v.videoRoomId}" target="_blank" class="abtn ab" style="text-decoration:none">🎥 Join Call</a></div>`:''}`
         :''}
       </div>`).join("");
