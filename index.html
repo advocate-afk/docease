@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>DocEase — Book Doctor Appointments Online | Aligarh</title>
+<script src="config.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600&display=swap" rel="stylesheet"/>
+<style>
+:root{--t:#0d9488;--td:#0f766e;--tl:#ccfbf1;--co:#f97316;--g50:#f8fafc;--g100:#f1f5f9;--g200:#e2e8f0;--g500:#64748b;--g700:#334155;--g900:#0f172a;--w:#fff}
+*{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;color:var(--g900);line-height:1.6}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--g200);padding:0 5%}
+.nav-inner{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:64px}
+.logo{font-size:22px;font-weight:800;color:var(--g900);text-decoration:none}.logo span{color:var(--t)}
+.nav-links{display:flex;align-items:center;gap:28px;list-style:none}
+.nav-links a{text-decoration:none;color:var(--g500);font-size:14px;font-weight:500;transition:.2s}.nav-links a:hover{color:var(--td)}
+.nav-cta{display:flex;gap:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 22px;border-radius:8px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;border:none;transition:.2s}
+.btn-ghost{background:transparent;color:var(--td);border:1.5px solid var(--tl)}.btn-ghost:hover{background:var(--tl)}
+.btn-primary{background:var(--t);color:#fff}.btn-primary:hover{background:var(--td)}
+.btn-large{padding:14px 32px;font-size:16px;border-radius:12px}
+.btn-white{background:#fff;color:var(--td)}.btn-white:hover{background:var(--g100)}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;align-items:center;padding:100px 5% 60px;background:linear-gradient(135deg,#f0fdf9 0%,#fff 50%,#fff7f0 100%)}
+.hero-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:70px;align-items:center}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:var(--tl);border:1px solid #99f6e4;border-radius:99px;padding:6px 16px;font-size:13px;font-weight:500;color:var(--td);margin-bottom:20px}
+h1{font-family:'Playfair Display',serif;font-size:46px;line-height:1.15;margin-bottom:20px;color:var(--g900)}
+h1 span{color:var(--t)}
+.hero-sub{font-size:17px;color:var(--g500);margin-bottom:32px;line-height:1.7}
+.hero-btns{display:flex;gap:14px;flex-wrap:wrap}
+.hero-stats{display:flex;gap:32px;margin-top:40px;padding-top:32px;border-top:1px solid var(--g200)}
+.stat .v{font-size:28px;font-weight:800;color:var(--t)}.stat .l{font-size:13px;color:var(--g500);margin-top:2px}
+/* mock card */
+.mock-card{background:#fff;border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,.12);padding:28px;position:relative}
+.mock-card .hosp{font-weight:700;font-size:16px;margin-bottom:4px}.mock-card .doc{font-size:13px;color:var(--g500);margin-bottom:16px}
+.slots{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.slot{padding:6px 14px;border-radius:8px;font-size:13px;font-weight:600;background:var(--tl);color:var(--td);cursor:pointer}
+.slot.sel{background:var(--t);color:#fff}
+.mock-btn{width:100%;padding:12px;background:var(--t);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif}
+.badge-float{position:absolute;top:-16px;right:20px;background:var(--co);color:#fff;padding:6px 16px;border-radius:99px;font-size:12px;font-weight:700}
+
+/* QR SECTION */
+.qr-section{background:var(--g50);padding:60px 5%;text-align:center}
+.qr-section .label{font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--t);margin-bottom:12px}
+.qr-section h2{font-size:28px;font-weight:700;margin-bottom:12px}
+.qr-section p{color:var(--g500);margin-bottom:32px;font-size:15px}
+.qr-box{display:inline-block;background:#fff;border:2px solid var(--g200);border-radius:20px;padding:28px;box-shadow:0 8px 30px rgba(0,0,0,.08)}
+.qr-steps{display:flex;gap:24px;justify-content:center;margin-top:28px;flex-wrap:wrap}
+.qr-step{background:#fff;border-radius:12px;padding:18px 24px;font-size:14px;color:var(--g700);box-shadow:0 2px 8px rgba(0,0,0,.06);max-width:200px;text-align:center}
+.qr-step .si{font-size:28px;margin-bottom:8px}
+
+/* HOW IT WORKS */
+.section{padding:80px 5%}
+.section-inner{max-width:1100px;margin:0 auto}
+.section-label{font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--t);margin-bottom:12px}
+.section-title{font-size:36px;font-weight:700;margin-bottom:12px}
+.section-sub{font-size:16px;color:var(--g500);margin-bottom:48px}
+.steps-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:0;position:relative}
+.steps-grid::before{content:'';position:absolute;top:28px;left:10%;right:10%;height:2px;background:var(--g200);z-index:0}
+.step-item{text-align:center;position:relative;z-index:1}
+.step-num{width:56px;height:56px;border-radius:50%;background:var(--t);color:#fff;font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.step-title{font-weight:700;font-size:14px;margin-bottom:6px}
+.step-desc{font-size:12px;color:var(--g500);line-height:1.5}
+
+/* FEATURES */
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.feat-card{background:#fff;border:1px solid var(--g200);border-radius:16px;padding:28px;transition:.2s}
+.feat-card:hover{border-color:var(--t);box-shadow:0 8px 24px rgba(13,148,136,.1)}
+.feat-icon{font-size:36px;margin-bottom:14px}
+.feat-card h3{font-size:17px;font-weight:700;margin-bottom:8px}
+.feat-card p{font-size:13px;color:var(--g500);line-height:1.6}
+
+/* PRICING */
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.price-card{background:#fff;border:2px solid var(--g200);border-radius:20px;padding:32px;position:relative}
+.price-card.featured{border-color:var(--t);box-shadow:0 16px 48px rgba(13,148,136,.15)}
+.price-card.featured::before{content:'Most Popular';position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--t);color:#fff;font-size:11px;font-weight:700;padding:4px 18px;border-radius:99px}
+.price-tier{font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t);margin-bottom:10px}
+.price-amt{font-size:38px;font-weight:800;color:var(--g900)}.price-per{font-size:13px;color:var(--g500);margin-bottom:20px}
+.price-features{list-style:none;margin-bottom:28px}
+.price-features li{font-size:14px;padding:6px 0;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--g100)}
+.price-features li:last-child{border:none}
+.price-features li::before{content:'✓';color:var(--t);font-weight:700;flex-shrink:0}
+
+/* REGISTER SECTION */
+.reg-section{background:linear-gradient(135deg,#134e4a,#0d9488);padding:80px 5%}
+.reg-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start}
+.reg-left h2{font-size:36px;font-weight:700;color:#fff;margin-bottom:16px;font-family:'Playfair Display',serif}
+.reg-left p{color:#99f6e4;font-size:15px;line-height:1.7;margin-bottom:24px}
+.reg-left ul{list-style:none}
+.reg-left ul li{color:#e0fdf4;font-size:14px;margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.reg-left ul li::before{content:'→';color:#5eead4;font-weight:700}
+.form-card{background:#fff;border-radius:20px;padding:32px}
+.form-card h3{font-size:20px;font-weight:700;margin-bottom:6px}
+.form-card .fc-sub{font-size:13px;color:var(--g500);margin-bottom:24px}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:12px;font-weight:600;color:var(--g700);margin-bottom:5px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 13px;border:1.5px solid var(--g200);border-radius:8px;font-family:'Inter',sans-serif;font-size:14px;color:var(--g900);outline:none;transition:.2s}
+.form-group input:focus,.form-group select:focus{border-color:var(--t)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.success-msg{display:none;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:16px;text-align:center;color:#166534;font-size:14px;font-weight:600;margin-top:12px}
+
+/* FOOTER */
+footer{background:#0f172a;padding:60px 5% 30px}
+.footer-inner{max-width:1200px;margin:0 auto}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:40px}
+.footer-brand .fb-logo{font-size:22px;font-weight:800;color:#fff;margin-bottom:10px}.fb-logo span{color:#5eead4}
+.footer-brand p{font-size:13px;color:#94a3b8;line-height:1.7;margin-bottom:16px}
+.dev-credit{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:14px;margin-top:8px}
+.dev-credit .dc-title{font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.dev-credit .dc-name{font-size:14px;font-weight:700;color:#5eead4;margin-bottom:3px}
+.dev-credit .dc-ph{font-size:13px;color:#94a3b8}
+.dev-credit .dc-ph a{color:#5eead4;text-decoration:none}
+.footer-col h4{font-size:12px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px}
+.footer-col ul{list-style:none}
+.footer-col ul li{margin-bottom:8px}
+.footer-col ul li a{text-decoration:none;color:#94a3b8;font-size:13px;transition:.2s}.footer-col ul li a:hover{color:#5eead4}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.08);padding-top:24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.footer-bottom p{font-size:12px;color:#64748b}
+
+/* MODAL */
+.mo-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center}
+.mo-overlay.show{display:flex}
+.mo-box{background:#fff;border-radius:16px;padding:28px;width:90%;max-width:440px;position:relative;max-height:90vh;overflow-y:auto}
+.mo-close{position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--g500)}
+.mo-title{font-size:18px;font-weight:700;margin-bottom:6px}
+.mo-sub{font-size:13px;color:var(--g500);margin-bottom:20px}
+
+@media(max-width:768px){
+  .hero-inner,.reg-inner,.footer-grid{grid-template-columns:1fr}
+  h1{font-size:32px}.steps-grid{grid-template-columns:1fr 1fr}.feat-grid,.pricing-grid{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr}.nav-links{display:none}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="logo">Doc<span>Ease</span></a>
+    <ul class="nav-links">
+      <li><a href="#how-it-works">How It Works</a></li>
+      <li><a href="#features">For Hospitals</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#register">Register Hospital</a></li>
+    </ul>
+    <div class="nav-cta">
+      <a href="hospital-login.html" class="btn btn-ghost">Hospital Login</a>
+      <a href="book.html" class="btn btn-primary">Book Appointment</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="hero-badge">🏥 Now Available Across India</div>
+      <h1>Book a Doctor <span>Without the Wait</span></h1>
+      <p class="hero-sub">Skip the queue. Book appointments online, get your token number instantly, and walk in at the right time. Free for patients, always.</p>
+      <div class="hero-btns">
+        <a href="book.html" class="btn btn-primary btn-large">📅 Book Appointment</a>
+        <a href="#how-it-works" class="btn btn-ghost btn-large">See How It Works</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><div class="v">2 min</div><div class="l">To Book</div></div>
+        <div class="stat"><div class="v">FREE</div><div class="l">For Patients</div></div>
+        <div class="stat"><div class="v">24/7</div><div class="l">Available</div></div>
+      </div>
+    </div>
+    <div>
+      <div class="mock-card">
+        <div class="badge-float">Token System ✓</div>
+        <div class="hosp">Rathi Hospital, Aligarh</div>
+        <div class="doc">Dr. Sharma — General Medicine</div>
+        <div style="font-size:12px;font-weight:600;color:var(--g500);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Available Slots</div>
+        <div class="slots">
+          <div class="slot">9:00 AM</div><div class="slot sel">10:30 AM</div>
+          <div class="slot">11:00 AM</div><div class="slot">2:00 PM</div>
+        </div>
+        <button class="mock-btn">Confirm Booking →</button>
+        <div style="margin-top:14px;padding:12px;background:var(--tl);border-radius:8px;text-align:center">
+          <div style="font-size:11px;color:var(--td);font-weight:600">YOUR TOKEN</div>
+          <div style="font-size:32px;font-weight:800;color:var(--t)">T-007</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- QR SCAN SECTION -->
+<section class="qr-section" id="qr-book">
+  <div class="section-label">Instant Access</div>
+  <h2>Scan QR to Book Instantly</h2>
+  <p>Hospitals display their QR code at reception. Scan it to go directly to their booking page.</p>
+  <div class="qr-box">
+    <div id="heroQR"></div>
+    <div style="font-size:13px;color:var(--g500);margin-top:12px">Scan to book at DocEase hospitals</div>
+  </div>
+  <div class="qr-steps">
+    <div class="qr-step"><div class="si">📱</div>Scan QR at hospital reception</div>
+    <div class="qr-step"><div class="si">📋</div>Fill your details (30 seconds)</div>
+    <div class="qr-step"><div class="si">🎫</div>Get your token number instantly</div>
+    <div class="qr-step"><div class="si">🏥</div>Arrive at your scheduled time</div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how-it-works" style="background:#fff">
+  <div class="section-inner" style="text-align:center">
+    <div class="section-label">Simple Process</div>
+    <h2 class="section-title">How Patients Book</h2>
+    <p class="section-sub">From phone to token in under 2 minutes</p>
+    <div class="steps-grid">
+      <div class="step-item"><div class="step-num">1</div><div class="step-title">Choose Type</div><div class="step-desc">In-person visit or video consult</div></div>
+      <div class="step-item"><div class="step-num">2</div><div class="step-title">Select Location</div><div class="step-desc">State → City → Hospital</div></div>
+      <div class="step-item"><div class="step-num">3</div><div class="step-title">Pick Doctor</div><div class="step-desc">See fees, experience, availability</div></div>
+      <div class="step-item"><div class="step-num">4</div><div class="step-title">Choose Date</div><div class="step-desc">Pick from available dates</div></div>
+      <div class="step-item"><div class="step-num">5</div><div class="step-title">Get Token</div><div class="step-desc">Print or save on WhatsApp</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section" id="features" style="background:var(--g50)">
+  <div class="section-inner">
+    <div style="text-align:center">
+      <div class="section-label">Hospital Features</div>
+      <h2 class="section-title">Everything Your Front Desk Needs</h2>
+      <p class="section-sub" style="margin-bottom:40px">A complete digital receptionist — available 24/7</p>
+    </div>
+    <div class="feat-grid">
+      <div class="feat-card"><div class="feat-icon">📅</div><h3>Smart Appointment Booking</h3><p>Patients book online, get token numbers. Zero phone calls, zero manual entries.</p></div>
+      <div class="feat-card"><div class="feat-icon">📹</div><h3>Video Consultations</h3><p>Pro plan hospitals can offer online video consults. Patients pay directly to you.</p></div>
+      <div class="feat-card"><div class="feat-icon">📱</div><h3>QR Code Reception</h3><p>Display your unique QR at reception. Patients scan and land directly on your booking page.</p></div>
+      <div class="feat-card"><div class="feat-icon">📲</div><h3>WhatsApp Tokens</h3><p>Appointment confirmations, token numbers, and video call links sent via WhatsApp.</p></div>
+      <div class="feat-card"><div class="feat-icon">🗓️</div><h3>Calendar Management</h3><p>Doctors can block dates for holidays, surgeries, or unavailability.</p></div>
+      <div class="feat-card"><div class="feat-icon">📊</div><h3>Dashboard & Reports</h3><p>See today's appointments, manage doctors, track subscriptions — all in one place.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="section" id="pricing" style="background:#fff">
+  <div class="section-inner">
+    <div style="text-align:center">
+      <div class="section-label">Transparent Pricing</div>
+      <h2 class="section-title">Simple Per-Doctor Pricing</h2>
+      <p class="section-sub" style="margin-bottom:40px">No setup fee. No hidden charges. Cancel anytime.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="price-tier">Free Trial</div>
+        <div class="price-amt">₹0</div>
+        <div class="price-per">7 days, no card required</div>
+        <ul class="price-features">
+          <li>All Basic features</li>
+          <li>Up to 5 doctors</li>
+          <li>Full dashboard access</li>
+          <li>Email support</li>
+        </ul>
+        <a href="#register" class="btn btn-ghost" style="width:100%;justify-content:center">Start Free Trial</a>
+      </div>
+      <div class="price-card featured">
+        <div class="price-tier">Basic Plan</div>
+        <div class="price-amt">₹499</div>
+        <div class="price-per">/doctor/month</div>
+        <ul class="price-features">
+          <li>Online appointment booking</li>
+          <li>Token number system</li>
+          <li>QR code for reception</li>
+          <li>WhatsApp confirmations</li>
+          <li>Calendar & date blocking</li>
+          <li>Doctor management</li>
+        </ul>
+        <a href="#register" class="btn btn-primary" style="width:100%;justify-content:center">Get Started</a>
+      </div>
+      <div class="price-card">
+        <div class="price-tier">Pro Plan</div>
+        <div class="price-amt">₹999</div>
+        <div class="price-per">/doctor/month</div>
+        <ul class="price-features">
+          <li>Everything in Basic</li>
+          <li>Video consultations</li>
+          <li>Patient online payment</li>
+          <li>Auto WhatsApp pay links</li>
+          <li>Jitsi video rooms</li>
+          <li>Priority support</li>
+        </ul>
+        <a href="#register" class="btn btn-ghost" style="width:100%;justify-content:center">Contact Us</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REGISTER SECTION -->
+<section class="reg-section" id="register">
+  <div class="reg-inner">
+    <div class="reg-left">
+      <h2>Ready to Modernise Your Hospital?</h2>
+      <p>Register your hospital in under 2 minutes. Our team reviews and activates your account within 24 hours. Start your free 7-day trial immediately after approval.</p>
+      <ul>
+        <li>No setup fee. No hidden charges.</li>
+        <li>We'll help onboard your entire team.</li>
+        <li>Cancel anytime, no questions asked.</li>
+        <li>Direct support from our team.</li>
+      </ul>
+      <div style="margin-top:28px;background:rgba(255,255,255,.1);border-radius:12px;padding:18px">
+        <div style="font-size:12px;color:#99f6e4;margin-bottom:4px">Need help? Contact us directly:</div>
+        <div style="font-size:16px;font-weight:700;color:#fff">GuruPriya Parashar</div>
+        <a href="tel:+918448189865" style="font-size:15px;color:#5eead4;text-decoration:none;font-weight:600">+91-8448189865</a>
+      </div>
+    </div>
+    <div class="form-card">
+      <h3>Register Your Hospital</h3>
+      <div class="fc-sub">We'll review and activate your trial within 24 hours.</div>
+      <div class="form-row">
+        <div class="form-group"><label>Hospital Name *</label><input type="text" id="rName" placeholder="City General Hospital"></div>
+        <div class="form-group"><label>Contact Person *</label><input type="text" id="rContact" placeholder="Dr. / Admin Name"></div>
+      </div>
+      <div class="form-group"><label>Hospital Email *</label><input type="email" id="rEmail" placeholder="admin@yourhospital.com"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Phone Number *</label><input type="tel" id="rPhone" placeholder="98765 43210"></div>
+        <div class="form-group"><label>No. of Doctors *</label><input type="number" id="rDocs" placeholder="5" min="1"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>State *</label><select id="rState" onchange="updateCityDropdown()"><option value="">-- Select State --</option></select></div>
+        <div class="form-group"><label>City *</label><select id="rDistrict"><option value="">-- Select City --</option></select></div>
+      </div>
+      <div class="form-group"><label>Full Address *</label><input type="text" id="rAddress" placeholder="Street, City, PIN"></div>
+      <div class="form-group"><label>Specializations</label><input type="text" id="rSpec" placeholder="General Medicine, Cardiology..."></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;padding:14px;margin-top:8px" onclick="submitReg()">
+        <span id="regBtnTxt">Submit Registration Request →</span>
+      </button>
+      <div class="success-msg" id="regSuccess">
+        ✅ Registration submitted! You'll receive an email within 24 hours once approved.
+      </div>
+      <p style="font-size:12px;color:var(--g500);text-align:center;margin-top:10px">By submitting, you agree to our Terms of Service.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="fb-logo">Doc<span>Ease</span></div>
+        <p>Digitising hospital front desks across India. Simple, affordable, reliable appointment management for clinics and hospitals.</p>
+        <div class="dev-credit">
+          <div class="dc-title">Developed & Managed by</div>
+          <div class="dc-name">GuruPriya Parashar</div>
+          <div class="dc-ph"><a href="tel:+918448189865">+91-8448189865</a></div>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>For Patients</h4>
+        <ul>
+          <li><a href="book.html">Book Appointment</a></li>
+          <li><a href="#how-it-works">How It Works</a></li>
+          <li><a href="#qr-book">Scan QR Code</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>For Hospitals</h4>
+        <ul>
+          <li><a href="#register">Register Hospital</a></li>
+          <li><a href="hospital-login.html">Hospital Login</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+          <li><a href="#features">Features</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Support</h4>
+        <ul>
+          <li><a href="tel:+918448189865">+91-8448189865</a></li>
+          <li><a href="#register">Contact Us</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2024 DocEase. Developed by GuruPriya Parashar. All rights reserved.</p>
+      <p>Made with ❤️ in Aligarh, UP</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+const B = DC.BACKEND;
+
+// QR code on landing page — books at any DocEase hospital
+window.onload = () => {
+  // QR code
+  const url = DC.BASE_URL + "book.html";
+  document.getElementById("heroQR").innerHTML =
+    `<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(url)}" width="180" height="180" alt="Scan to Book">`;
+  // Populate state dropdown
+  const sel = document.getElementById("rState");
+  if(sel){
+    Object.keys(ISC).sort().forEach(st=>{
+      const o=document.createElement("option");
+      o.value=st;o.textContent=st;sel.appendChild(o);
+    });
+  }
+};
+
+// India States & Cities
+const ISC = {
+  "Andhra Pradesh":["Visakhapatnam","Vijayawada","Guntur","Nellore","Kurnool","Tirupati","Rajahmundry","Kakinada","Anantapur","Kadapa"],
+  "Assam":["Guwahati","Silchar","Dibrugarh","Jorhat","Nagaon","Tinsukia","Tezpur"],
+  "Bihar":["Patna","Gaya","Bhagalpur","Muzaffarpur","Darbhanga","Arrah","Begusarai","Katihar","Purnia"],
+  "Chhattisgarh":["Raipur","Bhilai","Bilaspur","Korba","Durg","Rajnandgaon"],
+  "Delhi":["New Delhi","North Delhi","South Delhi","East Delhi","West Delhi","Dwarka","Rohini"],
+  "Gujarat":["Ahmedabad","Surat","Vadodara","Rajkot","Bhavnagar","Jamnagar","Gandhinagar","Anand"],
+  "Haryana":["Faridabad","Gurgaon","Panipat","Ambala","Rohtak","Hisar","Karnal","Sonipat","Panchkula"],
+  "Himachal Pradesh":["Shimla","Dharamsala","Mandi","Solan","Kullu","Kangra"],
+  "Jharkhand":["Ranchi","Jamshedpur","Dhanbad","Bokaro","Deoghar","Hazaribagh"],
+  "Karnataka":["Bengaluru","Mysuru","Hubballi","Mangaluru","Belagavi","Davanagere","Shivamogga","Tumakuru"],
+  "Kerala":["Thiruvananthapuram","Kochi","Kozhikode","Thrissur","Kollam","Palakkad","Alappuzha","Kannur"],
+  "Madhya Pradesh":["Bhopal","Indore","Jabalpur","Gwalior","Ujjain","Sagar","Dewas","Ratlam"],
+  "Maharashtra":["Mumbai","Pune","Nagpur","Thane","Nashik","Aurangabad","Solapur","Amravati","Kolhapur"],
+  "Odisha":["Bhubaneswar","Cuttack","Rourkela","Berhampur","Sambalpur","Puri","Balasore"],
+  "Punjab":["Ludhiana","Amritsar","Jalandhar","Patiala","Bathinda","Hoshiarpur","Pathankot","Mohali"],
+  "Rajasthan":["Jaipur","Jodhpur","Udaipur","Kota","Bikaner","Ajmer","Bharatpur","Alwar"],
+  "Tamil Nadu":["Chennai","Coimbatore","Madurai","Tiruchirappalli","Salem","Tirunelveli","Tiruppur","Erode","Vellore"],
+  "Telangana":["Hyderabad","Warangal","Nizamabad","Karimnagar","Khammam","Secunderabad"],
+  "Uttar Pradesh":["Lucknow","Kanpur","Ghaziabad","Agra","Varanasi","Meerut","Prayagraj","Aligarh","Bareilly","Moradabad","Mathura","Noida","Firozabad","Muzaffarnagar","Gorakhpur","Saharanpur","Jhansi","Bulandshahr","Rampur"],
+  "Uttarakhand":["Dehradun","Haridwar","Roorkee","Haldwani","Rudrapur","Kashipur","Rishikesh","Nainital"],
+  "West Bengal":["Kolkata","Howrah","Asansol","Siliguri","Durgapur","Bardhaman","Malda","Kharagpur"]
+};
+
+function updateCityDropdown(){
+  const st=document.getElementById("rState").value;
+  const cSel=document.getElementById("rDistrict");
+  cSel.innerHTML='<option value="">-- Select City --</option>';
+  if(st&&ISC[st]){
+    ISC[st].forEach(city=>{
+      const o=document.createElement("option");
+      o.value=city;o.textContent=city;cSel.appendChild(o);
+    });
+  }
+}
+
+async function submitReg() {
+  const name = document.getElementById("rName").value.trim();
+  const email = document.getElementById("rEmail").value.trim();
+  const phone = document.getElementById("rPhone").value.trim();
+  const state = document.getElementById("rState").value.trim();
+  const district = document.getElementById("rDistrict").value.trim();
+  const address = document.getElementById("rAddress").value.trim();
+
+  if (!name || !email || !phone || !state || !address) {
+    alert("Please fill all required fields (*)"); return;
+  }
+  if (!email.includes("@")) { alert("Enter a valid email address"); return; }
+
+  const btn = document.getElementById("regBtnTxt");
+  btn.textContent = "Submitting...";
+
+  try {
+    const r = await fetch(B, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "registerHospital",
+        name, email, phone,
+        address: address + (district ? ", " + district : "") + (state ? ", " + state : ""),
+        state, district,
+        specializations: document.getElementById("rSpec").value,
+        doctorCount: document.getElementById("rDocs").value || 1
+      })
+    });
+    const d = await r.json();
+    btn.textContent = "Submit Registration Request →";
+    if (d.ok) {
+      document.getElementById("regSuccess").style.display = "block";
+      // Clear form
+      ["rName","rContact","rEmail","rPhone","rDocs","rState","rDistrict","rAddress","rSpec"]
+        .forEach(id => document.getElementById(id).value = "");
+    } else {
+      alert(d.error || "Submission failed. Please try again.");
+    }
+  } catch(e) {
+    btn.textContent = "Submit Registration Request →";
+    alert("Network error. Please check your connection and try again.");
+  }
+}
+</script>
+</body>
+</html>
