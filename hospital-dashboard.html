@@ -216,6 +216,7 @@ tr:last-child td{border:none}
     <div class="fg"><label>Chief Complaint *</label>
       <textarea id="wiComp" rows="3" placeholder="Symptoms or reason for visit..." style="padding:9px 12px;border:1px solid var(--g300);border-radius:8px;font-family:inherit;font-size:13px;resize:vertical;width:100%"></textarea>
     </div>
+    <div class="fg"><label>Address</label><input id="wiAddr" placeholder="Village / Town, District"></div>
     <div class="fg"><label>Appointment Date *</label>
       <input type="date" id="wiDate" style="padding:9px 12px;border:1px solid var(--g300);border-radius:8px;font-family:inherit;font-size:13px;width:100%">
     </div>
@@ -806,7 +807,7 @@ async function bookWalkin(){
       patientName:name,mobile:mob,
       relationType:document.getElementById("wiRelT").value,
       relation:document.getElementById("wiRel").value,
-      age,gender:gen,complaint:comp,aadhaar:"",payStatus:"na"
+      age,gender:gen,complaint:comp,aadhaar:document.getElementById("wiAadh").value,payStatus:"na"
     });
     ["wiName","wiAge","wiMob","wiRel","wiComp","wiAadh","wiAddr"].forEach(id=>document.getElementById(id).value="");
     document.getElementById("wiDoc").value="";
