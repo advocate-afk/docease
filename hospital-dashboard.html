@@ -203,6 +203,7 @@ tr:last-child td{border:none}
         <select id="wiGen"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select>
       </div>
     </div>
+    <div class="fg"><label>Aadhaar Last 4 Digits</label><input type="text" id="wiAadh" placeholder="XXXX" maxlength="4"></div>
     <div class="fg"><label>Mobile *</label><input type="tel" id="wiMob" placeholder="10-digit" maxlength="10"></div>
     <div class="fg"><label>Relation</label>
       <div style="display:flex;gap:8px">
@@ -794,8 +795,8 @@ async function bookWalkin(){
       patientName:name,
       relation:document.getElementById("wiRel").value,
       relationType:document.getElementById("wiRelT").value,
-      aadhaar:"",age,gender:gen,mobile:mob,
-      address:"",complaint:comp,date
+      aadhaar:document.getElementById("wiAadh").value,age,gender:gen,mobile:mob,
+      address:document.getElementById("wiAddr").value,complaint:comp,date
     });
     btn.disabled=false;btn.textContent="📋 Book & Print Receipt";
     if(!r.ok){alert("Error: "+r.error);return;}
@@ -807,7 +808,7 @@ async function bookWalkin(){
       relation:document.getElementById("wiRel").value,
       age,gender:gen,complaint:comp,aadhaar:"",payStatus:"na"
     });
-    ["wiName","wiAge","wiMob","wiRel","wiComp"].forEach(id=>document.getElementById(id).value="");
+    ["wiName","wiAge","wiMob","wiRel","wiComp","wiAadh","wiAddr"].forEach(id=>document.getElementById(id).value="");
     document.getElementById("wiDoc").value="";
     document.getElementById("wiGen").value="";
     loadAll();
