@@ -300,6 +300,11 @@ tr:last-child td{border:none}
         <div class="fg"><label>State</label><input id="sState"></div>
         <div class="fg"><label>District</label><input id="sDist"></div>
         <div class="fg" style="grid-column:span 2"><label>Specializations (comma separated)</label><input id="sSpec"></div>
+        <div class="fg" style="grid-column:span 2">
+          <label>UPI ID (for video payment — alternative to Razorpay)</label>
+          <input id="sUpi" placeholder="hospital@upi or 9876543210@ybl">
+          <span style="font-size:11px;color:var(--g500);margin-top:3px">If filled, patients will pay via UPI instead of Razorpay</span>
+        </div>
       </div>
     </div>
   </div>
@@ -738,12 +743,14 @@ function loadSettings(){
   document.getElementById("sState").value=session.state||"";
   document.getElementById("sDist").value=session.district||"";
   document.getElementById("sSpec").value=session.specializations||"";
+  document.getElementById("sUpi").value=session.upiId||"";
 }
 async function saveSettings(){
   const r=await post({action:"updateHospital",hospitalId:session.hospitalId,
     name:document.getElementById("sName").value,phone:document.getElementById("sPhone").value,
     address:document.getElementById("sAddr").value,state:document.getElementById("sState").value,
-    district:document.getElementById("sDist").value,specializations:document.getElementById("sSpec").value});
+    district:document.getElementById("sDist").value,specializations:document.getElementById("sSpec").value,
+    upiId:document.getElementById("sUpi").value});
   if(r.ok){alert("Saved!");loadAll();}
 }
 
