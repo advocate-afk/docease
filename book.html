@@ -476,7 +476,8 @@ async function submit(){
       doctorId:S.doctor.doctorId, doctorName:S.doctor.name,
       patientName:nm, relation:v("rel"), relationType:v("relT"),
       aadhaar:v("aadh"), age:ag, gender:gn, mobile:mb,
-      address:v("addr"), complaint:cp, date:S.date||""
+      address:v("addr"), complaint:cp, date:S.date||"",
+      visitFee:S.doctor?.visitFee||""
     };
     const r=await api(payload);
     btn.disabled=false;btn.textContent="Confirm Booking";
