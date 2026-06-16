@@ -619,7 +619,11 @@ function renderVideoReqs(){
           </div>`
         :v.status==="approved"?`
           <div style="margin-top:8px;font-size:12px;color:var(--g500)">📅 ${v.date?new Date(v.date).toDateString():''} · ⏰ ${v.videoSlot?new Date(v.videoSlot).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"}):''} · 💳 ${v.payStatus==="paid"?'<span style="color:green;font-weight:600">Paid</span>':'Awaiting Payment'}</div>
-          ${v.payStatus==="paid"?`<div style="margin-top:7px"><a href="https://meet.jit.si/${v.videoRoomId}" target="_blank" class="abtn ab" style="text-decoration:none">🎥 Join Call</a></div>`:''}`
+          ${v.payStatus==="paid"?
+            `<div style="margin-top:7px"><a href="https://meet.jit.si/${v.videoRoomId}" target="_blank" class="abtn ab" style="text-decoration:none">🎥 Join Call</a></div>`
+            :session.upiId?
+            `<div style="margin-top:7px"><button class="abtn ag" onclick="confirmUpiPay('${v.aptId}','${v.mobile}')">✅ Confirm Payment Received</button></div>`
+            :''}`
         :''}
       </div>`).join("");
 }
@@ -643,6 +647,16 @@ async function rejectVideo(id){
   if(!confirm("Reject this video request?"))return;
   const r=await post({action:"rejectVideo",aptId:id});
   if(r.ok){if(r.waLink)window.open(r.waLink,"_blank");loadAll();}
+}
+
+  async function confirmUpiPay(aptId){
+  if(!confirm("Confirm that you received the UPI payment from this patient?"))return;
+  const r=await post({action:"confirmUpiPayment",aptId});
+  if(r.ok){
+    alert("✅ Payment confirmed! Video link sent to patient on WhatsApp.");
+    if(r.waLink)window.open(r.waLink,"_blank");
+    loadAll();
+  }else alert("Error: "+r.error);
 }
 
 // ---- QR ----
